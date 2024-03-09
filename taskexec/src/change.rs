@@ -17,7 +17,7 @@ impl ChangeList {
         }
     }
 
-    pub fn run(&self) -> ExecResult {
+    pub fn apply(&self) -> ExecResult {
         ExecResult {
             exitcode: 0,
             stdout: String::from("stdout"),
