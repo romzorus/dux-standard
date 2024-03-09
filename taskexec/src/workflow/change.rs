@@ -1,27 +1,34 @@
 // This part is used to generate a ChangeList based on an Assignment.
 
-use crate::workflow::result::ExecResult;
+use crate::workflow::result::TaskListResult;
+use crate::modules::Module;
+use crate::workflow::run::applychange;
 
 pub struct ChangeList {
-    changelist: Vec<Change>,
+    pub list: Vec<Change>,
 }
 
+#[derive(Clone)]
 pub struct Change {
-    change: String,
+    pub module: Module,
+    pub action: String,
+    pub parameters: Vec<String>
 }
 
 impl ChangeList {
     pub fn new() -> ChangeList {
         ChangeList {
-            changelist: Vec::<Change>::new(),
+            list: Vec::<Change>::new(),
         }
     }
 
-    pub fn apply(&self) -> ExecResult {
-        ExecResult {
-            exitcode: 0,
-            stdout: String::from("stdout"),
-            stderr: String::from("stderr")
+    pub fn apply(&self) -> TaskListResult {
+
+        let mut tasklistresult = TaskListResult::new();
+        for change in self.list.iter() {
+            let taskresult = applychange(change.clone());
+            tasklistresult.results.push(taskresult);
         }
+        tasklistresult
     }
 }
