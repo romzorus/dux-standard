@@ -4,6 +4,7 @@ use crate::host::Host;
 use crate::task::TaskList;
 
 pub struct Assignment {
+    runningmode: RunningMode,
     host: Host,
     tasklist: TaskList,
 }
@@ -11,6 +12,7 @@ pub struct Assignment {
 impl Assignment {
     pub fn new() -> Assignment {
         Assignment {
+            runningmode: RunningMode::DryRun,       // Default behavior = check only
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
         }
@@ -19,4 +21,9 @@ impl Assignment {
     pub fn dry_run(&self) -> ChangeList {
         ChangeList::new()
     }
+}
+
+enum RunningMode {
+    DryRun, // Only check what needs to be done to match the expected situation
+    Apply   // Actually apply the changes required to match the expected situation
 }
