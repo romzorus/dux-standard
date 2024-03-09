@@ -2,6 +2,8 @@
 use crate::workflow::change::ChangeList;
 use crate::workflow::host::Host;
 use crate::workflow::task::TaskList;
+use crate::workflow::run::RunningMode;
+use crate::workflow::run::dry_run_task;
 
 pub struct Assignment {
     runningmode: RunningMode,
@@ -19,11 +21,12 @@ impl Assignment {
     }
 
     pub fn dry_run(&self) -> ChangeList {
-        ChangeList::new()
+        assert_eq!(self.runningmode, RunningMode::DryRun);
+        let mut changelist = ChangeList::new();
+        for task in self.tasklist.list.iter() {
+            let taskdryrunresult = dry_run_task(task.clone());
+            changelist.list.push(taskdryrunresult);
+        }
+        changelist
     }
-}
-
-enum RunningMode {
-    DryRun, // Only check what needs to be done to match the expected situation
-    Apply   // Actually apply the changes required to match the expected situation
 }
