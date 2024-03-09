@@ -1,6 +1,6 @@
 // This part is used to generate a ChangeList based on an Assignment.
 
-use crate::result::ExecResult;
+use crate::workflow::result::ExecResult;
 
 pub struct ChangeList {
     changelist: Vec<Change>,
