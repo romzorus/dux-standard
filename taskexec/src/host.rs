@@ -5,7 +5,7 @@ pub struct HostList {
 }
 
 pub struct Host {
-    address: String,
+    pub address: String,
 }
 
 impl HostList {

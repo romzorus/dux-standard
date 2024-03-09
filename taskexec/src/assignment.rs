@@ -1,17 +1,17 @@
 // This part is used to generate an Assignment based on a TaskList and a HostList.
 use crate::change::ChangeList;
-use crate::host::HostList;
+use crate::host::Host;
 use crate::task::TaskList;
 
 pub struct Assignment {
-    hostlist: HostList,
+    host: Host,
     tasklist: TaskList,
 }
 
 impl Assignment {
     pub fn new() -> Assignment {
         Assignment {
-            hostlist: HostList::new(),
+            host: Host {address: String::from("")},
             tasklist: TaskList::new(),
         }
     }
