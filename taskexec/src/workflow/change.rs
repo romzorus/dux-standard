@@ -4,16 +4,34 @@ use crate::workflow::result::TaskListResult;
 use crate::modules::Module;
 use crate::workflow::run::apply_change;
 
-#[derive(Debug)]
-pub struct ChangeList {
-    pub list: Vec<Change>,
-}
-
 #[derive(Debug, Clone)]
 pub struct Change {
     pub module: Module,
-    pub action: String,
-    pub parameters: Vec<String>
+    pub action: Option<String>,
+    pub params: Option<Vec<String>>
+}
+
+impl Change {
+    pub fn new() -> Change {
+        Change {
+            module: Module::None,
+            action: Some(String::from("")),
+            params: None
+        }
+    }
+
+    pub fn none() -> Change {
+        Change {
+            module: Module::None,
+            action: None,
+            params: None
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ChangeList {
+    pub list: Vec<Change>,
 }
 
 impl ChangeList {
