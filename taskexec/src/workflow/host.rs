@@ -11,17 +11,29 @@ impl Host {
             address: String::from("0.0.0.0")
         }
     }
+
+    pub fn from(address: String) -> Host {
+        Host {
+            address
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct HostList {
-    hostlist: Vec<Host>,
+    list: Vec<Host>,
 }
 
 impl HostList {
     pub fn new() -> HostList {
         HostList {
-            hostlist: Vec::<Host>::new(),
+            list: Vec::<Host>::new(),
+        }
+    }
+
+    pub fn from(list: Vec<Host>) -> HostList {
+        HostList {
+            list
         }
     }
 }
