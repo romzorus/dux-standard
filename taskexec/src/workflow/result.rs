@@ -2,17 +2,25 @@
 
 #[derive(Debug)]
 pub struct TaskResult {
-    pub exitcode: usize,
-    pub stdout: String,
-    pub stderr: String,
+    pub exitcode: Option<usize>,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>
 }
 
 impl TaskResult {
     pub fn new() -> TaskResult {
         TaskResult {
-            exitcode: 0,
-            stdout: String::from(""),
-            stderr: String::from(""),
+            exitcode: None,
+            stdout: None,
+            stderr: None
+        }
+    }
+
+    pub fn none() -> TaskResult {
+        TaskResult {
+            exitcode: None,
+            stdout: None,
+            stderr: None
         }
     }
 }
