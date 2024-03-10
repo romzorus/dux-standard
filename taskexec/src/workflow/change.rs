@@ -2,7 +2,7 @@
 
 use crate::workflow::result::TaskListResult;
 use crate::modules::Module;
-use crate::workflow::run::applychange;
+use crate::workflow::run::apply_change;
 
 pub struct ChangeList {
     pub list: Vec<Change>,
@@ -26,7 +26,7 @@ impl ChangeList {
 
         let mut tasklistresult = TaskListResult::new();
         for change in self.list.iter() {
-            let taskresult = applychange(change.clone());
+            let taskresult = apply_change(change.clone());
             tasklistresult.results.push(taskresult);
         }
         tasklistresult
