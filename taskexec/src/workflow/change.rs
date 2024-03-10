@@ -4,11 +4,12 @@ use crate::workflow::result::TaskListResult;
 use crate::modules::Module;
 use crate::workflow::run::apply_change;
 
+#[derive(Debug)]
 pub struct ChangeList {
     pub list: Vec<Change>,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Change {
     pub module: Module,
     pub action: String,

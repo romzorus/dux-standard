@@ -1,6 +1,6 @@
 pub mod apt;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Module {
     Apt
 }

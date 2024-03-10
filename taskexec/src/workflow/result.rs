@@ -1,5 +1,6 @@
 // This part is used to define the result structure.
 
+#[derive(Debug)]
 pub struct TaskResult {
     pub exitcode: usize,
     pub stdout: String,
@@ -16,6 +17,7 @@ impl TaskResult {
     }
 }
 
+#[derive(Debug)]
 pub struct TaskListResult {
     pub results: Vec<TaskResult>
 }
