@@ -7,15 +7,20 @@
 
 use crate::workflow::change::{Change, ChangeList};
 use crate::workflow::result::TaskResult;
+use crate::workflow::task::Task;
 
 pub struct AptTask {
     package: String,
     action: String,
 }
 
-pub fn dry_run_apt_task() -> ChangeList {
+pub fn dry_run_apt_task(task: Task) -> Change {
     // Placeholder
-    ChangeList::new()
+    Change {
+        module: crate::modules::Module::Apt,
+        action: String::from(""),
+        parameters: vec![]
+    }
 }
 
 pub fn apply_apt_task(change: Change) -> TaskResult {
