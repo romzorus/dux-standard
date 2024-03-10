@@ -1,3 +1,4 @@
+use crate::modules::apt::dry_run_apt_task;
 use crate::modules::Module;
 use crate::workflow::change::Change;
 use crate::workflow::task::Task;
@@ -10,12 +11,11 @@ pub enum RunningMode {
 }
 
 pub fn dry_run_task(task: Task) -> Change {
-    // Placeholder
-    Change {
-        module: Module::Apt,
-        action: String::from(""),
-        parameters: vec![]
+
+    match task.module {
+        Module::Apt => { dry_run_apt_task(task)}
     }
+
 }
 
 pub fn applychange(change: Change) -> TaskResult {
