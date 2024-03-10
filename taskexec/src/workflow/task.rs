@@ -6,16 +6,25 @@ use crate::modules::Module;
 
 #[derive(Debug, Clone)]
 pub struct Task {
-    // Placeholder
-    pub task: String,
-    pub module: Module
+    pub module: Module,
+    pub action: String,
+    pub params: Option<Vec<String>>
 }
 
 impl Task {
     pub fn new() -> Task {
         Task {
-            task: String::from(""),
-            module: Module::Apt
+            module: Module::None,
+            action: String::new(),
+            params: None
+        }
+    }
+
+    pub fn from(module: Module, action: String, params: Option<Vec<String>>) -> Task {
+        Task {
+            module,
+            action,
+            params
         }
     }
 }
