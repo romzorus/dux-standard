@@ -2,7 +2,6 @@
 use crate::workflow::change::ChangeList;
 use crate::workflow::host::Host;
 use crate::workflow::task::TaskList;
-use crate::workflow::run::RunningMode;
 use crate::workflow::run::dry_run_task;
 
 #[derive(Debug)]
@@ -16,6 +15,13 @@ impl Assignment {
         Assignment {
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
+        }
+    }
+
+    pub fn from(host: Host, tasklist: TaskList) -> Assignment {
+        Assignment {
+            host,
+            tasklist
         }
     }
 
