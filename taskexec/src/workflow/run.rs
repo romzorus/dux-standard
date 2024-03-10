@@ -21,7 +21,7 @@ pub fn dry_run_task(task: Task) -> Change {
 pub fn applychange(change: Change) -> TaskResult {
     match change.module {
         Module::Apt => {
-            crate::modules::apt::apply_apt_task(change)
+            crate::modules::apt::apply_apt_change(change)
         }
     }
 }

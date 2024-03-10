@@ -23,7 +23,7 @@ pub fn dry_run_apt_task(task: Task) -> Change {
     }
 }
 
-pub fn apply_apt_task(change: Change) -> TaskResult {
+pub fn apply_apt_change(change: Change) -> TaskResult {
     // Placeholder
     TaskResult::new()
 }
