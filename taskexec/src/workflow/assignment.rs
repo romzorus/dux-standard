@@ -5,23 +5,21 @@ use crate::workflow::task::TaskList;
 use crate::workflow::run::RunningMode;
 use crate::workflow::run::dry_run_task;
 
+#[derive(Debug)]
 pub struct Assignment {
-    runningmode: RunningMode,
-    host: Host,
-    tasklist: TaskList,
+    pub host: Host,
+    pub tasklist: TaskList,
 }
 
 impl Assignment {
     pub fn new() -> Assignment {
         Assignment {
-            runningmode: RunningMode::DryRun,       // Default behavior = check only
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
         }
     }
 
     pub fn dry_run(&self) -> ChangeList {
-        assert_eq!(self.runningmode, RunningMode::DryRun);
         let mut changelist = ChangeList::new();
         for task in self.tasklist.list.iter() {
             let taskdryrunresult = dry_run_task(task.clone());
