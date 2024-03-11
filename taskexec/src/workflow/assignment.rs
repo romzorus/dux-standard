@@ -6,6 +6,7 @@ use crate::workflow::run::dry_run_task;
 
 #[derive(Debug)]
 pub struct Assignment {
+    pub runningmode: RunningMode,
     pub host: Host,
     pub tasklist: TaskList,
 }
@@ -13,13 +14,15 @@ pub struct Assignment {
 impl Assignment {
     pub fn new() -> Assignment {
         Assignment {
+            runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
         }
     }
 
-    pub fn from(host: Host, tasklist: TaskList) -> Assignment {
+    pub fn from(runningmode: RunningMode, host: Host, tasklist: TaskList) -> Assignment {
         Assignment {
+            runningmode,
             host,
             tasklist
         }
@@ -33,4 +36,10 @@ impl Assignment {
         }
         changelist
     }
+}
+
+#[derive(PartialEq, Debug)]
+pub enum RunningMode {
+    DryRun, // Only check what needs to be done to match the expected situation
+    Apply   // Actually apply the changes required to match the expected situation
 }
