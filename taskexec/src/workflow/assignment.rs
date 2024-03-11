@@ -6,6 +6,7 @@ use crate::workflow::run::dry_run_task;
 
 #[derive(Debug)]
 pub struct Assignment {
+    pub correlationid: String,
     pub runningmode: RunningMode,
     pub host: Host,
     pub tasklist: TaskList,
@@ -14,14 +15,19 @@ pub struct Assignment {
 impl Assignment {
     pub fn new() -> Assignment {
         Assignment {
+            correlationid: new_correlationid(),
             runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
         }
     }
 
-    pub fn from(runningmode: RunningMode, host: Host, tasklist: TaskList) -> Assignment {
+    pub fn from(
+        runningmode: RunningMode,
+        host: Host,
+        tasklist: TaskList ) -> Assignment {
         Assignment {
+            correlationid: new_correlationid(),
             runningmode,
             host,
             tasklist
@@ -29,7 +35,8 @@ impl Assignment {
     }
 
     pub fn dry_run(&self) -> ChangeList {
-        let mut changelist = ChangeList::new();
+        let mut changelist = ChangeList::new(self.correlationid.clone());
+        
         for task in self.tasklist.list.iter() {
             let taskdryrunresult = dry_run_task(task.clone());
             changelist.list.push(taskdryrunresult);
@@ -42,4 +49,9 @@ impl Assignment {
 pub enum RunningMode {
     DryRun, // Only check what needs to be done to match the expected situation
     Apply   // Actually apply the changes required to match the expected situation
+}
+
+pub fn new_correlationid() -> String {
+    // Placeholder
+    String::from("abcd")
 }

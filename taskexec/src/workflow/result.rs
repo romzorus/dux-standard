@@ -27,12 +27,14 @@ impl TaskResult {
 
 #[derive(Debug)]
 pub struct TaskListResult {
+    pub correlationid: String,
     pub results: Vec<TaskResult>
 }
 
 impl TaskListResult {
-    pub fn new() -> TaskListResult {
+    pub fn new(correlationid: String) -> TaskListResult {
         TaskListResult {
+            correlationid,
             results: Vec::<TaskResult>::new()
         }
     }
