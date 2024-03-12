@@ -1,10 +1,10 @@
 // This part is used to generate a TaskList based on the user input.
-
+use serde::Deserialize;
 use crate::modules::Module;
 
 // A Task is the interpreted/parsed version of a RawTask.
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Task {
     pub module: Module,
     pub action: String,
@@ -29,7 +29,7 @@ impl Task {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct TaskList {
     pub list: Vec<Task>,
 }
