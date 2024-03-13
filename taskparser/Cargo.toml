@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 taskexec = { path = "../taskexec"}
 config = "0.14.0"
+serde_yaml = "0.9.32"
