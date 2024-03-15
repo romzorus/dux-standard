@@ -1,22 +1,20 @@
 use std::process::exit;
-
-use config::{Config, File, FileFormat};
+use config::FileFormat;
 use taskexec::workflow::task::TaskList;
 use crate::fileformats::json::json_tasklist_parser;
 use crate::fileformats::toml::toml_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
 
-pub fn tasklist_parser(file_path: &str, file_format: FileFormat) -> TaskList {
+pub fn tasklist_parser(tasklistcontent: String, format: FileFormat) -> TaskList {
 
-    let tasklist_raw_content = Config::builder()
-        .add_source(File::new(file_path, file_format))
-        .build()
-        .expect("Problem opening the tasks list file");
-
-    match file_format {
-        FileFormat::Json => { json_tasklist_parser(tasklist_raw_content) }
-        FileFormat::Toml => { toml_tasklist_parser(tasklist_raw_content) }
-        FileFormat::Yaml => { yaml_tasklist_parser(tasklist_raw_content) }
+    match format {
+        FileFormat::Json => { json_tasklist_parser(&tasklistcontent) }
+        FileFormat::Toml => { toml_tasklist_parser(&tasklistcontent) }
+        FileFormat::Yaml => { yaml_tasklist_parser(&tasklistcontent) }
         _ => { exit(1) } // Placeholder : error handling required here
     }
+}
+
+pub fn tasklist_get_from_file(file_path: &str) -> String {
+    std::fs::read_to_string(file_path).unwrap() // Placeholder : error handling required here
 }
