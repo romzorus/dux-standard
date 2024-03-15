@@ -29,7 +29,7 @@ impl Change {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ChangeList {
     pub correlationid: String,
     pub list: Vec<Change>,

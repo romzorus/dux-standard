@@ -29,7 +29,7 @@ impl Task {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct TaskList {
     pub list: Vec<Task>,
 }
