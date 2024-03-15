@@ -1,4 +1,3 @@
-use config::Config;
 use taskexec::workflow::task::TaskList;
 
 pub fn toml_tasklist_parser(tasklistcontent: &String) -> TaskList {
