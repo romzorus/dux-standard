@@ -12,9 +12,9 @@ impl Host {
         }
     }
 
-    pub fn from(address: String) -> Host {
+    pub fn from(address: &str) -> Host {
         Host {
-            address
+            address: address.to_string()
         }
     }
 }
