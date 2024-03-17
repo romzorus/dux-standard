@@ -1,0 +1,40 @@
+[
+    {
+        "name": "1. Mise à jour système",
+        "tasks": [
+            {
+                "apt": {
+                    "action": "update"
+                }
+            }
+        ]
+    },
+    {
+        "name": "2. Installation prérequis",
+        "tasks": [
+            {
+                "apt": {
+                    "action": "install",
+                    "package": "geany"
+                }
+            },
+            {
+                "apt": {
+                    "action": "install",
+                    "package": "apache"
+                }
+            }
+        ]
+    },
+    {
+        "name": "3. Installation outil métier",
+        "tasks": [
+            {
+                "apt": {
+                    "action": "install",
+                    "package": "the-engine"
+                }
+            }
+        ]
+    }
+]
