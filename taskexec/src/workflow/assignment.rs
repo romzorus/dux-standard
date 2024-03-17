@@ -2,7 +2,8 @@
 use crate::workflow::change::ChangeList;
 use crate::workflow::host::Host;
 use crate::workflow::task::TaskList;
-use crate::workflow::run::dry_run_task;
+use crate::workflow::result::TaskListResult;
+
 
 #[derive(Debug)]
 pub struct Assignment {
@@ -35,13 +36,15 @@ impl Assignment {
     }
 
     pub fn dry_run(&self) -> ChangeList {
-        let mut changelist = ChangeList::new(self.correlationid.clone());
+
+        self.tasklist.dry_run_tasklist(self.correlationid.clone())
         
-        for task in self.tasklist.list.iter() {
-            let taskdryrunresult = dry_run_task(task.clone());
-            changelist.list.push(taskdryrunresult);
-        }
-        changelist
+    }
+
+    pub fn apply(&self) -> TaskListResult {
+
+        TaskListResult::new(self.correlationid.clone())
+
     }
 }
 

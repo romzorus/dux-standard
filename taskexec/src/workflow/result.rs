@@ -1,26 +1,45 @@
 // This part is used to define the result structure.
 
 #[derive(Debug)]
-pub struct TaskResult {
+pub struct ModuleBlockResult {
     pub exitcode: Option<usize>,
     pub stdout: Option<String>,
     pub stderr: Option<String>
 }
 
-impl TaskResult {
-    pub fn new() -> TaskResult {
-        TaskResult {
+impl ModuleBlockResult {
+    pub fn new_none() -> ModuleBlockResult {
+        ModuleBlockResult {
             exitcode: None,
             stdout: None,
             stderr: None
         }
     }
 
+    pub fn from(exitcode: Option<usize>, stdout: Option<String>, stderr: Option<String>) -> ModuleBlockResult {
+        ModuleBlockResult {
+            exitcode,
+            stdout,
+            stderr
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct TaskResult {
+    pub list: Option<Vec<ModuleBlockResult>>
+}
+
+impl TaskResult {
+    pub fn new() -> TaskResult {
+        TaskResult {
+            list: Some(Vec::new())
+        }
+    }
+
     pub fn none() -> TaskResult {
         TaskResult {
-            exitcode: None,
-            stdout: None,
-            stderr: None
+            list: None
         }
     }
 }
@@ -36,6 +55,13 @@ impl TaskListResult {
         TaskListResult {
             correlationid,
             results: Vec::<TaskResult>::new()
+        }
+    }
+
+    pub fn from(correlationid: String, results: Vec<TaskResult>) -> TaskListResult {
+        TaskListResult {
+            correlationid,
+            results
         }
     }
 }
