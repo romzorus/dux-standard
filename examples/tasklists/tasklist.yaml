@@ -1,9 +1,9 @@
-- name : 1. Mise à jour système
+- name : 1. System update
   tasks:
     - !apt
       action: update
 
-- name : 2. Installation prérequis
+- name : 2. Prerequisites installation
   tasks:
     - !apt
       action: install
@@ -12,7 +12,7 @@
       action: install
       package: firefox
 
-- name : 3. Installation outil métier
+- name : 3. Core business tool installation
   tasks:
     - !apt
       action: install

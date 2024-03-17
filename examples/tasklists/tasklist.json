@@ -1,6 +1,6 @@
 [
     {
-        "name": "1. Mise à jour système",
+        "name": "1. System update",
         "tasks": [
             {
                 "apt": {
@@ -10,7 +10,7 @@
         ]
     },
     {
-        "name": "2. Installation prérequis",
+        "name": "2. Prerequisites installation",
         "tasks": [
             {
                 "apt": {
@@ -27,7 +27,7 @@
         ]
     },
     {
-        "name": "3. Installation outil métier",
+        "name": "3. Core business tool installation",
         "tasks": [
             {
                 "apt": {
