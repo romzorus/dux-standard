@@ -9,3 +9,4 @@ edition = "2021"
 taskexec = { path = "../taskexec"}
 config = "0.14.0"
 serde_yaml = "0.9.32"
+serde_json = "1.0.114"
