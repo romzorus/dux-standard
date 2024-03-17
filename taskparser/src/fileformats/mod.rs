@@ -1,5 +1,4 @@
 pub mod json;
-pub mod toml;
 pub mod yaml;
 
 pub enum ContentFormat {
@@ -7,6 +6,5 @@ pub enum ContentFormat {
     Json,
     Pythonscript,
     Shellscript,
-    Toml,
     Yaml
 }

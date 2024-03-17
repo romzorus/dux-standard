@@ -2,14 +2,12 @@ use std::process::exit;
 use taskexec::workflow::task::TaskList;
 use crate::fileformats::ContentFormat;
 use crate::fileformats::json::json_tasklist_parser;
-use crate::fileformats::toml::toml_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
 
 pub fn tasklist_parser(tasklistcontent: String, format: ContentFormat) -> TaskList {
 
     match format {
         ContentFormat::Json => { json_tasklist_parser(&tasklistcontent) }
-        ContentFormat::Toml => { toml_tasklist_parser(&tasklistcontent) }
         ContentFormat::Yaml => { yaml_tasklist_parser(&tasklistcontent) }
         _ => { exit(1) } // Placeholder : error handling required here
     }
