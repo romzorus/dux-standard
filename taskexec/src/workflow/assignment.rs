@@ -4,7 +4,6 @@ use crate::workflow::host::Host;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 
-
 #[derive(Debug)]
 pub struct Assignment {
     pub correlationid: String,
@@ -14,9 +13,9 @@ pub struct Assignment {
 }
 
 impl Assignment {
-    pub fn new() -> Assignment {
+    pub fn new(correlationid: String) -> Assignment {
         Assignment {
-            correlationid: new_correlationid(),
+            correlationid,
             runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: Host {address: String::from("")},
             tasklist: TaskList::new(),
@@ -24,11 +23,12 @@ impl Assignment {
     }
 
     pub fn from(
+        correlationid: String,
         runningmode: RunningMode,
         host: Host,
         tasklist: TaskList ) -> Assignment {
         Assignment {
-            correlationid: new_correlationid(),
+            correlationid,
             runningmode,
             host,
             tasklist
@@ -52,9 +52,4 @@ impl Assignment {
 pub enum RunningMode {
     DryRun, // Only check what needs to be done to match the expected situation
     Apply   // Actually apply the changes required to match the expected situation
-}
-
-pub fn new_correlationid() -> String {
-    // Placeholder
-    String::from("abcd")
 }
