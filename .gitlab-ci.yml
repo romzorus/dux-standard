@@ -1,8 +1,16 @@
+default:
+ image: rust:slim-buster
+
 stages:
   - build
+  - test
 
-rust-latest:
+release-building:
   stage: build
-  image: rust:slim-buster
   script:
    - cargo build --release --verbose
+
+testing:
+  stage: test
+  script:
+   - cargo test
