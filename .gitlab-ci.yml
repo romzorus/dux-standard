@@ -1,6 +1,10 @@
 default:
  image: rust:slim-buster
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
 stages:
   - build
   - test
