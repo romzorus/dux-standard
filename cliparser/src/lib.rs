@@ -9,12 +9,12 @@ pub struct CliArgs {
     pub conf: Option<String>,
 
     /// Path to TaskList file
-    #[arg(short, long)]
-    pub tasklist: Option<String>,
+    #[arg(short, long, default_value_t = String::from("tasklist.yml"))]
+    pub tasklist: String,
 
     /// Path to HostList file
-    #[arg(short = 'l', long)]
-    pub hostlist: Option<String>,
+    #[arg(short = 'l', long, default_value_t = String::from("hostlist"))]
+    pub hostlist: String,
 
     /// Path to SSH keys folder
     #[arg(short, long)]
