@@ -3,5 +3,6 @@ members = [
 	"taskexec",
 	"taskparser",
 	"cliparser",
-	"all-in-one-worker"
+	"all-in-one-worker",
+	"hostparser"
 ]
