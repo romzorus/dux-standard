@@ -21,7 +21,7 @@ impl Host {
 
 #[derive(Debug)]
 pub struct HostList {
-    list: Vec<Host>,
+    pub list: Vec<Host>,
 }
 
 impl HostList {
