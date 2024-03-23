@@ -1,0 +1,10 @@
+image: rust:slim-buster
+
+cache:
+  paths:
+   - rust
+
+stages:
+  - build
+  - tests
+  - deploy
