@@ -1,6 +1,7 @@
 use taskexec::prelude::*;
 use taskparser::prelude::*;
 use cliparser::{parse_cli_args, CliArgs };
+use hostparser::*;
 
 fn main() {
     // Parse the CLI arguments
@@ -12,7 +13,8 @@ fn main() {
         ContentFormat::Yaml);
     
     // Build a HostList (not implemented yet)
-    let hostlist: HostList = HostList::from(vec![Host::from("127.0.0.1")]);
+    let hostlistcontent = hostlist_get_from_file("examples/hostlists/hostlist");
+    let hostlist = hostlist_parser(hostlistcontent);
 
     // Build Assignments (an Assignment is basicall a Host associated to a TaskList)
     //  -> Initialization of CorrelationId
@@ -20,7 +22,8 @@ fn main() {
     correlationid.init();
     //  -> Actual build of Assignments
     let mut assignmentlist: Vec<Assignment> = Vec::new();
-    for host in hostlist.list.into_iter() {
+
+    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
         assignmentlist.push(
             Assignment::from(
                 correlationid.get_new_value().unwrap(),
@@ -36,10 +39,11 @@ fn main() {
     //  -> Run each Assignment
     for assignment in assignmentlist.into_iter() {
         let execresult = assignment.dry_run().apply_changelist();
+        
+        println!("**** Host : {} *****", assignment.host);
+        println!("{:?}", execresult);
+
         results.push(execresult);
     }
-
-    // Display the Results
-    println!("Results :");
-    println!("{:#?}", results);
+    // results now contains all the output of the run, per host
 }

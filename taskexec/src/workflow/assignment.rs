@@ -1,6 +1,5 @@
 // This part is used to generate an Assignment based on a TaskList and a HostList.
 use crate::workflow::change::ChangeList;
-use crate::workflow::host::Host;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 
@@ -8,7 +7,7 @@ use crate::workflow::result::TaskListResult;
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
-    pub host: Host,
+    pub host: String,
     pub tasklist: TaskList,
 }
 
@@ -17,7 +16,7 @@ impl Assignment {
         Assignment {
             correlationid,
             runningmode: RunningMode::DryRun, // DryRun is default running mode
-            host: Host {address: String::from("")},
+            host: String::from(""),
             tasklist: TaskList::new(),
         }
     }
@@ -25,7 +24,7 @@ impl Assignment {
     pub fn from(
         correlationid: String,
         runningmode: RunningMode,
-        host: Host,
+        host: String,
         tasklist: TaskList ) -> Assignment {
         Assignment {
             correlationid,

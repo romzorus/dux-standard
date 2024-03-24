@@ -9,3 +9,4 @@ edition = "2021"
 taskexec = { path = "../taskexec" }
 taskparser = { path = "../taskparser" }
 cliparser = { path = "../cliparser" }
+hostparser = { path = "../hostparser" }
