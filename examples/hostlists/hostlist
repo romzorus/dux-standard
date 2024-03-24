@@ -1,0 +1,25 @@
+---
+hosts:
+  - hap.main.company.local
+  - localhost
+  - 10.20.230.2
+
+groups:
+  - name: webservers
+    hosts:
+    - front1.intra.company.local
+    - www1
+    - www2
+    - front2.intra.company.local
+    - 19.24.201.13
+
+  - name: database
+    hosts:
+    - db1.wkr3.company.local
+    - db1.wkr4.company.local
+    - db2.wkr1.company.local
+  
+  - name: others
+    hosts:
+     - jabber1
+     - backup
