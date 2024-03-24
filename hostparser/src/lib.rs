@@ -12,6 +12,30 @@ pub struct HostList {
     pub groups: Option<Vec<Group>>
 }
 
+impl HostList {
+    pub fn new() -> HostList {
+        HostList {
+            hosts: Some(Vec::new()),
+            groups: Some(Vec::new())
+        }
+    }
+
+    pub fn from_hosts(hosts: Vec<String>) -> HostList {
+        if hosts.is_empty() {
+            HostList {
+                hosts: None,
+                groups: None
+            }
+        } else {
+            HostList {
+                hosts: Some(hosts),
+                groups: None
+            }
+        }
+
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Group {
     pub name: String,
