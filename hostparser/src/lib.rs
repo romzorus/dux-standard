@@ -1,8 +1,4 @@
-use std::fs::File;
-use std::io::Read;
-use serde::{Serialize, Deserialize};
-use serde_yaml::Value;
-use std::collections::HashMap;
+use serde::Deserialize;
 use taskexec::workflow::error::Error;
 
 // TODO : define Host ? any interest ?
