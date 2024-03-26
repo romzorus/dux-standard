@@ -4,5 +4,6 @@ members = [
 	"taskparser",
 	"cliparser",
 	"all-in-one-worker",
-	"hostparser"
+	"hostparser",
+	"connection"
 ]
