@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# TODO : add ssh key checking : if the controller_key has changed, we need to rebuild
+# the Docker images to embed the new key
 ContainerList=$1
 ModuleName=$2
 
