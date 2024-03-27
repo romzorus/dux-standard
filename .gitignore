@@ -2,3 +2,4 @@ Cargo.lock
 target
 testing/docker/controller_key*
 testing/docker/*json
+testing/docker/*yaml

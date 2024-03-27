@@ -30,3 +30,4 @@ do
 done
 
 rm -f $ContainerList
+rm -f $ModuleName.yaml

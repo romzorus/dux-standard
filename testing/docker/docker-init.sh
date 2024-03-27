@@ -22,13 +22,18 @@ then
     ssh-keygen -t ed25519 -f controller_key -N "" -q
 fi
 
-# The $ContainerList file will be used by the actual integration tests
-# as a source of information on the hosts (inventory building for example).
-# For now, we are building it in JSON format, as an array of objects.
+# Building a JSON file for containers handling and an inventory for
+# the actual use of the containers
 
 # Opening an array in the JSON file
 echo "{" >> $ContainerList
 echo '"containers_list": [' >> $ContainerList
+
+# Opening the inventory file
+InventoryFile="$ModuleName.yaml"
+echo "---" >> $InventoryFile
+echo "hosts:" >> $InventoryFile
+
 
 # Here we list all the Dockerfiles available
 DOCKERFILES_LIST=$(find Dockerfiles -type f -name "Dockerfile-*")
@@ -48,7 +53,6 @@ do
     echo {\"container_name\" : \"dux-host-$ModuleName-$OsName\", >> $ContainerList
     echo \"container_id\" : \"$ContainerID\", >> $ContainerList
     echo \"container_ip\" : \"$ContainerIP\", >> $ContainerList
-    echo \"container_pubkey\" : \"$ContainerPubKey\"}, >> $ContainerList
 
     # Having the container's key allowed on the host to avoid the usual StrictHostKeyChecking issues
     if [ -e ~/.ssh/known_hosts ]
@@ -59,9 +63,12 @@ do
         echo $ContainerPubKey >> ~/.ssh/known_hosts
     fi
     
+    # Filling the inventory file
+    echo "  - $ContainerIP" >> $InventoryFile
+
 done
 
-# The last line ends with "}," (unvalid JSON syntax) which needs to be changed to "}".
+# The last line ends with "}," (invalid JSON syntax) which needs to be changed to "}".
 sed -i '$ s@},@}@g' $ContainerList
 
 # Closing the array of the JSON file

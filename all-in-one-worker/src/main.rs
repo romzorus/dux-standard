@@ -13,10 +13,10 @@ fn main() {
         ContentFormat::Yaml);
     
     // Build a HostList (not implemented yet)
-    let hostlistcontent = hostlist_get_from_file("examples/hostlists/hostlist");
+    let hostlistcontent = hostlist_get_from_file("testing/docker/dux.yaml");
     let hostlist = hostlist_parser(hostlistcontent);
 
-    // Build Assignments (an Assignment is basicall a Host associated to a TaskList)
+    // Build Assignments (an Assignment is basically a Host associated to a TaskList)
     //  -> Initialization of CorrelationId
     let mut correlationid = CorrelationIdGenerator::new();
     correlationid.init();
