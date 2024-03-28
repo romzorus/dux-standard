@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use taskexec::workflow::error::Error;
+use errors::Error;
 
 // TODO : define Host ? any interest ?
 // pub struct Host {

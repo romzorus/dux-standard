@@ -2,7 +2,7 @@ use sha2::{Sha256, Digest};
 use machineid_rs::{Encryption, HWIDComponent, IdBuilder};
 use std::time::SystemTime;
 
-use crate::workflow::error::Error;
+use errors::Error;
 
 #[derive(Debug)]
 pub struct CorrelationIdGenerator {
