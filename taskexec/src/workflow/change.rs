@@ -17,10 +17,10 @@ impl ModuleBlockChange {
         }
     }
 
-    pub fn apply_moduleblockchange(&self) -> ModuleBlockResult {
+    pub fn apply_moduleblockchange(&self, host: String) -> ModuleBlockResult {
         match self.module.clone().unwrap() {
             ModuleBlock::None => {ModuleBlockResult::new_none() }
-            ModuleBlock::Apt(block) => { block.apply_moduleblock_change() }
+            ModuleBlock::Apt(block) => { block.apply_moduleblock_change(host) }
         }
     }
 }
@@ -53,6 +53,7 @@ impl TaskChange {
 #[derive(Debug, Clone)]
 pub struct ChangeList {
     pub correlationid: String,
+    host: String,
     pub list: Option<Vec<TaskChange>>
 }
 
@@ -60,13 +61,15 @@ impl ChangeList {
     pub fn new(correlationid: String) -> ChangeList {
         ChangeList {
             correlationid,
+            host: String::new(),
             list: Some(Vec::new()),
         }
     }
 
-    pub fn from(correlationid: String, list: Option<Vec<TaskChange>>) -> ChangeList {
+    pub fn from(correlationid: String, host: String, list: Option<Vec<TaskChange>>) -> ChangeList {
         ChangeList {
             correlationid,
+            host,
             list,
         }
     }
@@ -88,7 +91,7 @@ impl ChangeList {
                             let mut list: Vec<ModuleBlockResult> = Vec::new();
         
                             for moduleblockchange in taskchange.list.unwrap().clone().into_iter() {
-                                let moduleblockresult = moduleblockchange.apply_moduleblockchange();
+                                let moduleblockresult = moduleblockchange.apply_moduleblockchange(self.host.clone());
                                 list.push(moduleblockresult);
                             }
                 

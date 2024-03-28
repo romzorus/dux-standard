@@ -25,11 +25,11 @@ impl Task {
         }
     }
 
-    pub fn dry_run_task(&self) -> TaskChange {
+    pub fn dry_run_task(&self, host: String) -> TaskChange {
         let mut list: Vec<ModuleBlockChange> = Vec::new();
 
         for moduleblock in self.clone().tasks.into_iter() {
-            let moduleblockchange = moduleblock.dry_run_moduleblock();
+            let moduleblockchange = moduleblock.dry_run_moduleblock(host.clone());
             list.push(moduleblockchange);
         }
 
@@ -57,18 +57,18 @@ impl TaskList {
             list
         }
     }
-    pub fn dry_run_tasklist(&self, correlationid: String) -> ChangeList {
+    pub fn dry_run_tasklist(&self, correlationid: String, host: String) -> ChangeList {
         let mut list: Vec<TaskChange> = Vec::new();
 
         for task in self.list.clone().into_iter() {
-            let taskchange = task.dry_run_task();
+            let taskchange = task.dry_run_task(host.clone());
             list.push(taskchange);
         }
 
         if list.iter().all(|x| x.list.is_none()) {
-            ChangeList::from(correlationid, None)
+            ChangeList::from(correlationid, host.clone(), None)
         } else {
-            ChangeList::from(correlationid, Some(list))
+            ChangeList::from(correlationid, host.clone(), Some(list))
         }
     }
 }

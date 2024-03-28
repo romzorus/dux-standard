@@ -36,7 +36,7 @@ impl Assignment {
 
     pub fn dry_run(&self) -> ChangeList {
 
-        self.tasklist.dry_run_tasklist(self.correlationid.clone())
+        self.tasklist.dry_run_tasklist(self.correlationid.clone(), self.host.clone())
         
     }
 

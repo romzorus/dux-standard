@@ -1,13 +1,12 @@
-use serde::Deserialize;
 use std::path::PathBuf;
 use ssh2::Session;
 use std::net::TcpStream;
-use taskexec::workflow::error::Error;
+use errors::Error;
 
 pub struct RemoteHostHandler {
-    hostaddress: String,
-    sshsession: Session,
-    connectionmode: ConnectionMode,
+    pub hostaddress: String,
+    pub sshsession: Session,
+    pub connectionmode: ConnectionMode,
 }
 
 impl RemoteHostHandler {
@@ -41,7 +40,7 @@ impl RemoteHostHandler {
 }
 
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub enum ConnectionMode {
     Unset,
     UsernamePassword(Credentials),
@@ -49,7 +48,7 @@ pub enum ConnectionMode {
     SshAgent(String)    // Name of SSH agent
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Credentials {
     username: String,
     password: String

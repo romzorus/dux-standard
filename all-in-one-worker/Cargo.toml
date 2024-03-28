@@ -10,3 +10,5 @@ taskexec = { path = "../taskexec" }
 taskparser = { path = "../taskparser" }
 cliparser = { path = "../cliparser" }
 hostparser = { path = "../hostparser" }
+connection = { path = "../connection" }
+ssh2 = "0.9.4"

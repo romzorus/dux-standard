@@ -13,10 +13,11 @@ pub enum ModuleBlock {
 
 impl ModuleBlock {
     pub fn new() -> ModuleBlock { ModuleBlock::None }
-    pub fn dry_run_moduleblock(&self) -> ModuleBlockChange {
+
+    pub fn dry_run_moduleblock(&self, host: String) -> ModuleBlockChange {
         match &self {
             ModuleBlock::None => { ModuleBlockChange::new_none() }
-            ModuleBlock::Apt(block) => { block.dry_run_block() }
+            ModuleBlock::Apt(block) => { block.dry_run_block(host) }
         }
     }
 }

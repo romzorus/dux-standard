@@ -2,6 +2,9 @@ use taskexec::prelude::*;
 use taskparser::prelude::*;
 use cliparser::{parse_cli_args, CliArgs };
 use hostparser::*;
+use connection::prelude::*;
+use std::path::Path;
+use std::io::prelude::*;
 
 fn main() {
     // Parse the CLI arguments
@@ -38,10 +41,17 @@ fn main() {
     let mut results: Vec<TaskListResult> = Vec::new();
     //  -> Run each Assignment
     for assignment in assignmentlist.into_iter() {
+
         let execresult = assignment.dry_run().apply_changelist();
         
         println!("**** Host : {} *****", assignment.host);
-        println!("{:?}", execresult);
+        for result in execresult.clone().results.into_iter() {
+            for blockresult in result.list.into_iter() {
+                for moduleblockresult in blockresult.into_iter() {
+                    println!("{}", moduleblockresult.stdout.unwrap().trim());
+                }
+            }
+        }
 
         results.push(execresult);
     }

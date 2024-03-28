@@ -1,6 +1,6 @@
 // This part is used to define the result structure.
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ModuleBlockResult {
     pub exitcode: Option<usize>,
     pub stdout: Option<String>,
@@ -25,7 +25,7 @@ impl ModuleBlockResult {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TaskResult {
     pub list: Option<Vec<ModuleBlockResult>>
 }
@@ -44,7 +44,7 @@ impl TaskResult {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TaskListResult {
     pub correlationid: String,
     pub results: Vec<TaskResult>
