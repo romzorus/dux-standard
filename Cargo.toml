@@ -1,10 +1,10 @@
 [workspace]
 members = [
-	"taskexec",
-	"taskparser",
-	"cliparser",
+	"lib/taskexec",
+	"lib/taskparser",
+	"lib/cliparser",
 	"all-in-one-worker",
-	"hostparser",
-	"connection",
-	"errors"
+	"lib/hostparser",
+	"lib/connection",
+	"lib/errors"
 ]

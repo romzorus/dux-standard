@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-taskexec = { path = "../taskexec" }
-taskparser = { path = "../taskparser" }
-cliparser = { path = "../cliparser" }
-hostparser = { path = "../hostparser" }
-connection = { path = "../connection" }
+taskexec = { path = "../lib/taskexec" }
+taskparser = { path = "../lib/taskparser" }
+cliparser = { path = "../lib/cliparser" }
+hostparser = { path = "../lib/hostparser" }
+connection = { path = "../lib/connection" }
 ssh2 = "0.9.4"
