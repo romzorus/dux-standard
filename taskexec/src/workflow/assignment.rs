@@ -2,6 +2,7 @@
 use crate::workflow::change::ChangeList;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
+use connection::prelude::*;
 
 #[derive(Debug)]
 pub struct Assignment {
@@ -9,6 +10,7 @@ pub struct Assignment {
     pub runningmode: RunningMode,
     pub host: String,
     pub tasklist: TaskList,
+    pub hosthandler: HostHandler
 }
 
 impl Assignment {

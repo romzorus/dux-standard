@@ -1,10 +1,10 @@
+use cliparser::{parse_cli_args, CliArgs};
+use connection::prelude::*;
+use hostparser::*;
+use std::io::prelude::*;
+use std::path::Path;
 use taskexec::prelude::*;
 use taskparser::prelude::*;
-use cliparser::{parse_cli_args, CliArgs };
-use hostparser::*;
-use connection::prelude::*;
-use std::path::Path;
-use std::io::prelude::*;
 
 fn main() {
     // Parse the CLI arguments
@@ -13,11 +13,11 @@ fn main() {
     // Build a TaskList (YAML is assumed for now)
     let tasklist = tasklist_parser(
         tasklist_get_from_file(&cliargs.tasklist),
-        ContentFormat::Yaml);
-    
+        ContentFormat::Yaml,
+    );
+
     // Build a HostList (not implemented yet)
-    let hostlistcontent = hostlist_get_from_file("testing/docker/dux.yaml");
-    let hostlist = hostlist_parser(hostlistcontent);
+    let hostlist = hostlist_parser(hostlist_get_from_file(&cliargs.hostlist));
 
     // Build Assignments (an Assignment is basically a Host associated to a TaskList)
     //  -> Initialization of CorrelationId
@@ -27,13 +27,12 @@ fn main() {
     let mut assignmentlist: Vec<Assignment> = Vec::new();
 
     for host in hostlist_get_all_hosts(&hostlist).unwrap() {
-        assignmentlist.push(
-            Assignment::from(
-                correlationid.get_new_value().unwrap(),
-                RunningMode::Apply,
-                host,
-                tasklist.clone())
-        );
+        assignmentlist.push(Assignment::from(
+            correlationid.get_new_value().unwrap(),
+            RunningMode::Apply,
+            host,
+            tasklist.clone(),
+        ));
     }
 
     // Run the Assignments and save the Results
@@ -42,8 +41,10 @@ fn main() {
     //  -> Run each Assignment
     for assignment in assignmentlist.into_iter() {
 
+        let hosthandler = assignment.hosthandler.clone();
+
         let execresult = assignment.dry_run().apply_changelist();
-        
+
         println!("**** Host : {} *****", assignment.host);
         for result in execresult.clone().results.into_iter() {
             for blockresult in result.list.into_iter() {

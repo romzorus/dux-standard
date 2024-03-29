@@ -3,26 +3,26 @@ use ssh2::Session;
 use std::net::TcpStream;
 use errors::Error;
 
-pub struct RemoteHostHandler {
+pub struct Ssh2HostHandler {
     pub hostaddress: String,
     pub sshsession: Session,
-    pub connectionmode: ConnectionMode,
+    pub authmode: Ssh2AuthMode,
 }
 
-impl RemoteHostHandler {
-    pub fn new() -> RemoteHostHandler {
-        RemoteHostHandler {
+impl Ssh2HostHandler {
+    pub fn new() -> Ssh2HostHandler {
+        Ssh2HostHandler {
             hostaddress: String::new(),
             sshsession: Session::new().unwrap(),
-            connectionmode: ConnectionMode::Unset,
+            authmode: Ssh2AuthMode::Unset,
         }
     }
 
-    pub fn init(&mut self, hostaddress: String, connectionmode: ConnectionMode) -> Result<(), Error> {
-        match connectionmode {
-            ConnectionMode::Unset => { return Err(Error::MissingInitialization) }
-            ConnectionMode::UsernamePassword(credentials) => { return Ok(()); } // TODO
-            ConnectionMode::SshKeys((username, privatekey)) => {
+    pub fn init(&mut self, hostaddress: String, authmode: Ssh2AuthMode) -> Result<(), Error> {
+        match authmode {
+            Ssh2AuthMode::Unset => { return Err(Error::MissingInitialization) }
+            Ssh2AuthMode::UsernamePassword(credentials) => { return Ok(()); } // TODO
+            Ssh2AuthMode::SshKeys((username, privatekey)) => {
                 let tcp = TcpStream::connect(format!("{}:22", hostaddress)).unwrap(); // TODO : add SSH custom port handling
                 self.sshsession.set_tcp_stream(tcp);
                 self.sshsession.handshake().unwrap();
@@ -34,17 +34,17 @@ impl RemoteHostHandler {
                     return Err(Error::FailedInitialization)
                 }
             }
-            ConnectionMode::SshAgent(agent) => { return Ok(()); } // TODO
+            Ssh2AuthMode::SshAgent(agent) => { return Ok(()); } // TODO
         }
     }
 }
 
 
 #[derive(Debug, Clone)]
-pub enum ConnectionMode {
+pub enum Ssh2AuthMode {
     Unset,
     UsernamePassword(Credentials),
-    SshKeys((String, PathBuf)),   // (username, path to private key)
+    SshKeys((String, PathBuf)),   // (username, private key's path)
     SshAgent(String)    // Name of SSH agent
 }
 

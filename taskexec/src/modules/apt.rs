@@ -67,3 +67,12 @@ impl AptBlock {
         }
     }
 }
+
+// -- Niveau worker : après réception d'un Assignment, création d'un HostHandler
+// avec infos utiles trouvées dans Assignment (HostHandler non initialisé)
+// hosthandler.new()
+// hosthandler.init()
+
+// -- Niveau module : utilisation du HostHandler
+// hosthandler.run_cmd()
+// ...
