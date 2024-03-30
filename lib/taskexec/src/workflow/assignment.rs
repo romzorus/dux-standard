@@ -3,6 +3,8 @@ use crate::workflow::change::ChangeList;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
+use connection::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
+use std::path::Path;
 
 pub struct Assignment {
     pub correlationid: String,
@@ -38,9 +40,21 @@ impl Assignment {
         }
     }
 
-    pub fn dry_run(&self) -> ChangeList {
+    pub fn dry_run(&mut self) -> ChangeList {
 
-        self.tasklist.dry_run_tasklist(self.correlationid.clone(), self.host.clone())
+        // Initialization of the connection
+        match self.hosthandler.connectionmode {
+            ConnectionMode::Ssh2 => {
+                let privatekey = Path::new("/home/romzor/Developpement/dux/testing/docker/controller_key");
+                self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
+                self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys(("root".to_string(), privatekey.to_path_buf())));
+                self.hosthandler.init().expect("Failed HostHandler initialization");
+            }
+
+            _ => {}
+        }
+        
+        self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler)
         
     }
 

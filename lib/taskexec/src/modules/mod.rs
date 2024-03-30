@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::modules::apt::AptBlock;
+use connection::prelude::*;
 
 pub mod apt;
 
@@ -14,10 +15,10 @@ pub enum ModuleBlock {
 impl ModuleBlock {
     pub fn new() -> ModuleBlock { ModuleBlock::None }
 
-    pub fn dry_run_moduleblock(&self, host: String) -> ModuleBlockChange {
+    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         match &self {
             ModuleBlock::None => { ModuleBlockChange::new_none() }
-            ModuleBlock::Apt(block) => { block.dry_run_block(host) }
+            ModuleBlock::Apt(block) => { block.dry_run_block(hosthandler) }
         }
     }
 }

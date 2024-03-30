@@ -42,9 +42,7 @@ fn main() {
     //  -> Run each Assignment
     for mut assignment in assignmentlist.into_iter() {
 
-        assignment.hosthandler.init();
-
-        let execresult = assignment.dry_run().apply_changelist();
+        let execresult = assignment.dry_run().apply_changelist(&mut assignment.hosthandler);
 
         println!("**** Host : {} *****", assignment.host);
         for result in execresult.clone().results.into_iter() {

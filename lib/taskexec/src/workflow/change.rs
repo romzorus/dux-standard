@@ -3,6 +3,7 @@
 use crate::workflow::result::{TaskResult, TaskListResult};
 use crate::workflow::result::ModuleBlockResult;
 use crate::modules::ModuleBlock;
+use connection::prelude::*;
 
 
 #[derive(Debug, Clone)]
@@ -17,10 +18,10 @@ impl ModuleBlockChange {
         }
     }
 
-    pub fn apply_moduleblockchange(&self, host: String) -> ModuleBlockResult {
+    pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
         match self.module.clone().unwrap() {
             ModuleBlock::None => {ModuleBlockResult::new_none() }
-            ModuleBlock::Apt(block) => { block.apply_moduleblock_change(host) }
+            ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
         }
     }
 }
@@ -74,7 +75,7 @@ impl ChangeList {
         }
     }
 
-    pub fn apply_changelist(&self) -> TaskListResult {
+    pub fn apply_changelist(&self, hosthandler: &mut HostHandler) -> TaskListResult {
 
         match self.list {
             None => { TaskListResult::from(self.correlationid.clone(), vec![])}
@@ -91,7 +92,7 @@ impl ChangeList {
                             let mut list: Vec<ModuleBlockResult> = Vec::new();
         
                             for moduleblockchange in taskchange.list.unwrap().clone().into_iter() {
-                                let moduleblockresult = moduleblockchange.apply_moduleblockchange(self.host.clone());
+                                let moduleblockresult = moduleblockchange.apply_moduleblockchange(hosthandler);
                                 list.push(moduleblockresult);
                             }
                 

@@ -2,6 +2,7 @@
 use serde::Deserialize;
 use crate::modules::ModuleBlock;
 use crate::workflow::change::{ChangeList, ModuleBlockChange, TaskChange};
+use connection::prelude::*;
 
 
 #[derive(Debug, Clone, Deserialize)]
@@ -25,11 +26,11 @@ impl Task {
         }
     }
 
-    pub fn dry_run_task(&self, host: String) -> TaskChange {
+    pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> TaskChange {
         let mut list: Vec<ModuleBlockChange> = Vec::new();
 
         for moduleblock in self.clone().tasks.into_iter() {
-            let moduleblockchange = moduleblock.dry_run_moduleblock(host.clone());
+            let moduleblockchange = moduleblock.dry_run_moduleblock(hosthandler);
             list.push(moduleblockchange);
         }
 
@@ -57,18 +58,18 @@ impl TaskList {
             list
         }
     }
-    pub fn dry_run_tasklist(&self, correlationid: String, host: String) -> ChangeList {
+    pub fn dry_run_tasklist(&self, correlationid: String, hosthandler: &mut HostHandler) -> ChangeList {
         let mut list: Vec<TaskChange> = Vec::new();
 
         for task in self.list.clone().into_iter() {
-            let taskchange = task.dry_run_task(host.clone());
+            let taskchange = task.dry_run_task(hosthandler);
             list.push(taskchange);
         }
 
         if list.iter().all(|x| x.list.is_none()) {
-            ChangeList::from(correlationid, host.clone(), None)
+            ChangeList::from(correlationid, hosthandler.hostaddress.clone(), None)
         } else {
-            ChangeList::from(correlationid, host.clone(), Some(list))
+            ChangeList::from(correlationid, hosthandler.hostaddress.clone(), Some(list))
         }
     }
 }
