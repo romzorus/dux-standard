@@ -4,7 +4,7 @@ use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
 use connection::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub struct Assignment {
     pub correlationid: String,
@@ -42,15 +42,38 @@ impl Assignment {
 
     pub fn dry_run(&mut self) -> ChangeList {
 
-        // Initialization of the connection
-        match self.hosthandler.connectionmode {
+        // Initialization of the connection based on CLI args, var files...etc
+        // For now, a local struct is defined to simulate those parameters
+        struct HostParameters {
+            connectionmode: ConnectionMode,
+            ssh2authmode: Ssh2AuthMode,
+        }
+
+        let hostparams = HostParameters {
+            connectionmode: ConnectionMode::Ssh2,
+            ssh2authmode: Ssh2AuthMode::SshKeys((
+                String::from("root"),
+                PathBuf::from("/home/romzor/Developpement/dux/testing/docker/controller_key")
+            ))
+        };
+
+        match hostparams.connectionmode {
             ConnectionMode::Ssh2 => {
-                let privatekey = Path::new("/home/romzor/Developpement/dux/testing/docker/controller_key");
-                self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
-                self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys(("root".to_string(), privatekey.to_path_buf())));
+                // The ssh2auth field needs to be set before running init()
+                match hostparams.ssh2authmode {
+                    Ssh2AuthMode::Unset => {} // TODO : return some error, missing auth mode
+                    Ssh2AuthMode::UsernamePassword(_credentials) => {}
+                    Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
+                        self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
+                        self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys((username, privatekeypath.to_path_buf())));
+                    }
+                    Ssh2AuthMode::SshAgent(_agentname) => {}
+                }
+
+                // Now running init()
                 self.hosthandler.init().expect("Failed HostHandler initialization");
             }
-
+            ConnectionMode::LocalHost => {} // Nothing to initialize if working on the localhost
             _ => {}
         }
         
