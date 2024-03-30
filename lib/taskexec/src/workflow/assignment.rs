@@ -4,11 +4,10 @@ use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
 
-#[derive(Debug)]
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
-    pub host: String,
+    pub host: String, // Will disappear soon, fully replaced by hosthandler
     pub tasklist: TaskList,
     pub hosthandler: HostHandler
 }
@@ -20,6 +19,7 @@ impl Assignment {
             runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: String::from(""),
             tasklist: TaskList::new(),
+            hosthandler: HostHandler::new()
         }
     }
 
@@ -27,12 +27,14 @@ impl Assignment {
         correlationid: String,
         runningmode: RunningMode,
         host: String,
-        tasklist: TaskList ) -> Assignment {
+        tasklist: TaskList,
+        hosthandler: HostHandler) -> Assignment {
         Assignment {
             correlationid,
             runningmode,
             host,
-            tasklist
+            tasklist,
+            hosthandler
         }
     }
 

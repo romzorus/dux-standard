@@ -30,8 +30,9 @@ fn main() {
         assignmentlist.push(Assignment::from(
             correlationid.get_new_value().unwrap(),
             RunningMode::Apply,
-            host,
+            host.clone(),
             tasklist.clone(),
+            HostHandler::from(ConnectionMode::Ssh2, host)
         ));
     }
 
@@ -39,9 +40,9 @@ fn main() {
     //  -> Open a vector to put the results in
     let mut results: Vec<TaskListResult> = Vec::new();
     //  -> Run each Assignment
-    for assignment in assignmentlist.into_iter() {
+    for mut assignment in assignmentlist.into_iter() {
 
-        let hosthandler = assignment.hosthandler.clone();
+        assignment.hosthandler.init();
 
         let execresult = assignment.dry_run().apply_changelist();
 

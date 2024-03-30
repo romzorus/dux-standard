@@ -6,6 +6,7 @@ use crate::modules::ModuleBlock;
 use connection::prelude::*;
 use std::path::Path;
 use std::io::prelude::*;
+use connection::ssh2mode::Ssh2AuthMode;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct AptBlock {
@@ -36,23 +37,16 @@ impl AptBlock {
         match self.action.as_str() {
             "install" => {
                 println!("**** Install package {}", self.package.clone().unwrap());
+                
                 let privatekey = Path::new("/home/romzor/Developpement/dux/testing/docker/controller_key");
-                let mut remotehosthandler = RemoteHostHandler::new();
+                let mut hosthandler = HostHandler::from(ConnectionMode::Ssh2, host);
+                hosthandler.ssh2auth(Ssh2AuthMode::SshKeys(("root".to_string(), privatekey.to_path_buf())));
+                
+                hosthandler.init();
+                assert!(hosthandler.ssh2.sshsession.authenticated());
         
-                let _ = remotehosthandler.init(
-                    host,
-                    ConnectionMode::SshKeys((
-                            "root".to_string(),
-                            privatekey.to_path_buf()))
-                    );
-        
-                assert!(remotehosthandler.sshsession.authenticated());
-        
-                let mut channel = remotehosthandler.sshsession.channel_session().unwrap();
-                channel.exec("cat /etc/os-release | grep ^NAME").unwrap();
-                let mut s = String::new();
-                channel.read_to_string(&mut s).unwrap();
-                let _ = channel.wait_close();
+                let s = hosthandler.run_cmd("cat /etc/os-release | grep ^NAME").unwrap();
+                
                 ModuleBlockResult::from(
                     Some(0),
                     Some(s),
