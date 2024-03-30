@@ -67,9 +67,9 @@ impl TaskList {
         }
 
         if list.iter().all(|x| x.list.is_none()) {
-            ChangeList::from(correlationid, hosthandler.hostaddress.clone(), None)
+            ChangeList::from(correlationid, None, hosthandler.clone())
         } else {
-            ChangeList::from(correlationid, hosthandler.hostaddress.clone(), Some(list))
+            ChangeList::from(correlationid, Some(list), hosthandler.clone())
         }
     }
 }

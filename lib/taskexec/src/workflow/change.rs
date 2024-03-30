@@ -51,27 +51,27 @@ impl TaskChange {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ChangeList {
     pub correlationid: String,
-    host: String,
-    pub list: Option<Vec<TaskChange>>
+    pub list: Option<Vec<TaskChange>>,
+    hosthandler: HostHandler
 }
 
 impl ChangeList {
     pub fn new(correlationid: String) -> ChangeList {
         ChangeList {
             correlationid,
-            host: String::new(),
             list: Some(Vec::new()),
+            hosthandler: HostHandler::new()
         }
     }
 
-    pub fn from(correlationid: String, host: String, list: Option<Vec<TaskChange>>) -> ChangeList {
+    pub fn from(correlationid: String, list: Option<Vec<TaskChange>>, hosthandler: HostHandler) -> ChangeList {
         ChangeList {
             correlationid,
-            host,
             list,
+            hosthandler
         }
     }
 
