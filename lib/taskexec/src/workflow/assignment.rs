@@ -3,15 +3,13 @@ use crate::workflow::change::ChangeList;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
-use connection::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
-use std::path::{Path, PathBuf};
 
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
     pub host: String, // Will disappear soon, fully replaced by hosthandler
     pub tasklist: TaskList,
-    pub hosthandler: HostHandler
+    pub hosthandler: HostHandler,
 }
 
 impl Assignment {
@@ -42,39 +40,23 @@ impl Assignment {
 
     pub fn dry_run(&mut self) -> ChangeList {
 
-        // Initialization of the connection based on CLI args, var files...etc
-        // For now, a local struct is defined to simulate those parameters
-        struct HostParameters {
-            connectionmode: ConnectionMode,
-            ssh2authmode: Ssh2AuthMode,
-        }
-
-        let hostparams = HostParameters {
-            connectionmode: ConnectionMode::Ssh2,
-            ssh2authmode: Ssh2AuthMode::SshKeys((
-                String::from("root"),
-                PathBuf::from("/home/romzor/Developpement/dux/testing/docker/controller_key")
-            ))
-        };
-
-        match hostparams.connectionmode {
+        // TODO : turn all this connection initialization into anAssignment's method
+        match &self.hosthandler.connectionmode {
+            ConnectionMode::Unset => {} // TODO : return some error
+            ConnectionMode::LocalHost => {} // Nothing to initialize if working on the localhost
             ConnectionMode::Ssh2 => {
-                // The ssh2auth field needs to be set before running init()
-                match hostparams.ssh2authmode {
+                match self.hosthandler.ssh2.authmode.clone() {
                     Ssh2AuthMode::Unset => {} // TODO : return some error, missing auth mode
                     Ssh2AuthMode::UsernamePassword(_credentials) => {}
                     Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
                         self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
-                        self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys((username, privatekeypath.to_path_buf())));
+                        self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys((username.clone(), privatekeypath.to_path_buf())));
                     }
                     Ssh2AuthMode::SshAgent(_agentname) => {}
                 }
 
-                // Now running init()
                 self.hosthandler.init().expect("Failed HostHandler initialization");
             }
-            ConnectionMode::LocalHost => {} // Nothing to initialize if working on the localhost
-            _ => {}
         }
         
         self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler)
@@ -82,7 +64,7 @@ impl Assignment {
     }
 
     pub fn apply(&self) -> TaskListResult {
-
+        assert_eq!(self.runningmode, RunningMode::Apply);
         TaskListResult::new(self.correlationid.clone())
 
     }

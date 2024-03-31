@@ -1,12 +1,8 @@
 // APT Module : handle packages in Debian-like distributions
 
 use serde::Deserialize;
-use crate::workflow::{change::ModuleBlockChange, result::{ModuleBlockResult, TaskResult}};
+use crate::workflow::{change::ModuleBlockChange, result::ModuleBlockResult};
 use crate::modules::ModuleBlock;
-use connection::prelude::*;
-use std::path::Path;
-use std::io::prelude::*;
-use connection::ssh2mode::Ssh2AuthMode;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]

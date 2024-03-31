@@ -1,8 +1,7 @@
 use cliparser::{parse_cli_args, CliArgs};
 use connection::prelude::*;
 use hostparser::*;
-use std::io::prelude::*;
-use std::path::Path;
+use std::path::PathBuf;
 use taskexec::prelude::*;
 use taskparser::prelude::*;
 
@@ -17,7 +16,9 @@ fn main() {
     );
 
     // Build a HostList (not implemented yet)
-    let hostlist = hostlist_parser(hostlist_get_from_file(&cliargs.hostlist));
+    let hostlist = hostlist_parser(
+        hostlist_get_from_file(&cliargs.hostlist)
+    );
 
     // Build Assignments (an Assignment is basically a Host associated to a TaskList)
     //  -> Initialization of CorrelationId
@@ -27,12 +28,41 @@ fn main() {
     let mut assignmentlist: Vec<Assignment> = Vec::new();
 
     for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+
+        let mut hosthandler = HostHandler::from(ConnectionMode::Ssh2, host.clone());
+
+        match &cliargs.key {
+            Some(privatekeypath) => {
+                hosthandler.ssh2auth(
+                    Ssh2AuthMode::SshKeys((
+                        cliargs.user.clone(),
+                        PathBuf::from(privatekeypath)
+                    ))
+                );
+            }
+            None => {
+                // No SSH key given as argument, trying with password if it is given
+                match cliargs.password.clone() {
+                    Some(pwd) => {
+                        hosthandler.ssh2auth(
+                            Ssh2AuthMode::UsernamePassword(
+                                Credentials::from(cliargs.user.clone(), pwd)
+                            )
+                        );
+                    }
+                    None => {
+                        println!("No SSH key or password to connect to remote host.")
+                    }
+                }
+            }
+        }
+        
         assignmentlist.push(Assignment::from(
             correlationid.get_new_value().unwrap(),
             RunningMode::Apply,
             host.clone(),
             tasklist.clone(),
-            HostHandler::from(ConnectionMode::Ssh2, host)
+            hosthandler
         ));
     }
 

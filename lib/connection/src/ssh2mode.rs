@@ -44,7 +44,7 @@ impl Ssh2HostHandler {
     pub fn init(&mut self) -> Result<(), Error> {
         match &self.authmode {
             Ssh2AuthMode::Unset => { return Err(Error::MissingInitialization); }
-            Ssh2AuthMode::UsernamePassword(credentials) => { return Ok(()); } // TODO
+            Ssh2AuthMode::UsernamePassword(_credentials) => { return Ok(()); } // TODO
             Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
                 let tcp = TcpStream::connect(format!("{}:22", self.hostaddress)).unwrap(); // TODO : add SSH custom port handling
                 self.sshsession.set_tcp_stream(tcp);
@@ -57,7 +57,7 @@ impl Ssh2HostHandler {
                     return Err(Error::FailedInitialization)
                 }
             }
-            Ssh2AuthMode::SshAgent(agent) => { return Ok(()); } // TODO
+            Ssh2AuthMode::SshAgent(_agent) => { return Ok(()); } // TODO
         }
     }
     
@@ -87,4 +87,13 @@ pub enum Ssh2AuthMode {
 pub struct Credentials {
     username: String,
     password: String
+}
+
+impl Credentials {
+    pub fn from(username: String, password: String) -> Credentials {
+        Credentials {
+            username,
+            password
+        }
+    }
 }

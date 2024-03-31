@@ -17,7 +17,7 @@ pub struct HostHandler {
     pub connectionmode: ConnectionMode,
     pub hostaddress: String,
     pub ssh2: Ssh2HostHandler,
-    // ssh3handler: Ssh3HostHandler
+    // ssh3: Ssh3HostHandler
 }
 
 impl HostHandler {
@@ -26,7 +26,7 @@ impl HostHandler {
             connectionmode: ConnectionMode::Unset,
             hostaddress: String::new(),
             ssh2: Ssh2HostHandler::new(),
-            // ssh3handler: ....
+            // ssh3: ....
         }
     }
 

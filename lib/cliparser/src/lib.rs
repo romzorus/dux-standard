@@ -16,13 +16,13 @@ pub struct CliArgs {
     #[arg(short = 'l', long, default_value_t = String::from("hostlist"))]
     pub hostlist: String,
 
-    /// Path to SSH keys folder
-    #[arg(short, long)]
-    pub sshkeys: Option<String>,
-
     /// Username to use on remote hosts
-    #[arg(short, long)]
-    pub user: Option<String>,
+    #[arg(short, long, default_value_t = String::from("root"))]
+    pub user: String,
+
+    /// Path to private SSH key to use
+    #[arg(short = 'k', long)]
+    pub key: Option<String>,
 
     /// Password to use on remote hosts
     #[arg(short, long)]
