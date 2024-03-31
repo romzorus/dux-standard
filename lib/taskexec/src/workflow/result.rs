@@ -2,13 +2,21 @@
 
 #[derive(Debug, Clone)]
 pub struct ModuleBlockResult {
-    pub exitcode: Option<usize>,
+    pub exitcode: Option<i32>,
     pub stdout: Option<String>,
     pub stderr: Option<String>
 }
 
 impl ModuleBlockResult {
-    pub fn new_none() -> ModuleBlockResult {
+    pub fn new() -> ModuleBlockResult {
+        ModuleBlockResult {
+            exitcode: Some(0),
+            stdout: Some(String::new()),
+            stderr: Some(String::new())
+        }
+    }
+
+    pub fn none() -> ModuleBlockResult {
         ModuleBlockResult {
             exitcode: None,
             stdout: None,
@@ -16,7 +24,7 @@ impl ModuleBlockResult {
         }
     }
 
-    pub fn from(exitcode: Option<usize>, stdout: Option<String>, stderr: Option<String>) -> ModuleBlockResult {
+    pub fn from(exitcode: Option<i32>, stdout: Option<String>, stderr: Option<String>) -> ModuleBlockResult {
         ModuleBlockResult {
             exitcode,
             stdout,

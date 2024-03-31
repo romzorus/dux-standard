@@ -12,16 +12,29 @@ pub struct ModuleBlockChange {
 }
 
 impl ModuleBlockChange {
-    pub fn new_none() -> ModuleBlockChange {
+    pub fn new() -> ModuleBlockChange {
+        ModuleBlockChange {
+            module: Some(ModuleBlock::new())
+        }
+    }
+
+    pub fn none() -> ModuleBlockChange {
         ModuleBlockChange {
             module: None
         }
     }
 
     pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
-        match self.module.clone().unwrap() {
-            ModuleBlock::None => {ModuleBlockResult::new_none() }
-            ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+        match self.module.clone() {
+            Some(content) => {
+                match content {
+                    ModuleBlock::None => {ModuleBlockResult::none() }
+                    ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+                    ModuleBlock::Dnf(block) => { block.apply_moduleblock_change(hosthandler) }
+                    ModuleBlock::Yum(block) => { block.apply_moduleblock_change(hosthandler) }
+                }
+            }
+            None => { ModuleBlockResult::none() }
         }
     }
 }
