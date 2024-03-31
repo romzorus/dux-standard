@@ -1,19 +1,20 @@
 - name : 1. System update
   tasks:
     - !apt
-      action: update
+      upgrade: true # Upgrade the whole system
 
 - name : 2. Prerequisites installation
   tasks:
     - !apt
-      action: install
-      package: geany
+      state: present # present | absent
+      package: build-essential
+
     - !apt
-      action: install
-      package: firefox
+      state: present
+      package: git
 
 - name : 3. Core business tool installation
   tasks:
     - !apt
-      action: install
+      state: present
       package: the-engine
