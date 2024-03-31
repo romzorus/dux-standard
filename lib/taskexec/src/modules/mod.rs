@@ -1,15 +1,19 @@
+pub mod blocks;
+pub mod apt;
+pub mod yumdnf;
+
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
-use crate::modules::apt::AptBlock;
+use crate::modules::blocks::*;
 use connection::prelude::*;
-
-pub mod apt;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all="lowercase")]
 pub enum ModuleBlock {
     None, // Used for new() methods, initializations and errors
-    Apt(AptBlock)
+    Apt(AptBlock),
+    Dnf(YumDnfBlock),
+    Yum(YumDnfBlock)
 }
 
 impl ModuleBlock {
@@ -17,8 +21,10 @@ impl ModuleBlock {
 
     pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         match &self {
-            ModuleBlock::None => { ModuleBlockChange::new_none() }
+            ModuleBlock::None => { ModuleBlockChange::none() }
             ModuleBlock::Apt(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlock::Dnf(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlock::Yum(block) => { block.dry_run_block(hosthandler) }
         }
     }
 }
