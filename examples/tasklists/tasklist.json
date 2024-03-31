@@ -4,7 +4,7 @@
         "tasks": [
             {
                 "apt": {
-                    "action": "update"
+                    "upgrade": true
                 }
             }
         ]
@@ -14,14 +14,14 @@
         "tasks": [
             {
                 "apt": {
-                    "action": "install",
-                    "package": "geany"
+                    "state": "present",
+                    "package": "build-essential"
                 }
             },
             {
                 "apt": {
-                    "action": "install",
-                    "package": "apache"
+                    "state": "present",
+                    "package": "git"
                 }
             }
         ]
@@ -31,7 +31,7 @@
         "tasks": [
             {
                 "apt": {
-                    "action": "install",
+                    "state": "present",
                     "package": "the-engine"
                 }
             }
