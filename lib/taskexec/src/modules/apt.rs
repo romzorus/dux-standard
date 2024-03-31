@@ -7,58 +7,156 @@ use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct AptBlock {
-    action: String,
+    state: Option<String>,
     package: Option<String>,
+    upgrade: Option<bool>
 }
 
 impl AptBlock {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
-        match self.action.as_str() {
-            "install" => {
-                ModuleBlockChange {
-                    module: Some(
-                        ModuleBlock::Apt(AptBlock{
-                            action: "install".to_string(),
-                            package: Some(self.package.clone().unwrap())
-                        })
-                    )
+        assert!(hosthandler.ssh2.sshsession.authenticated());
+
+        if ! is_apt_working(hosthandler) {
+            println!("[DRY-RUN] : APT absent or not working properly on {}", hosthandler.hostaddress);
+            return ModuleBlockChange::none();
+        }
+
+        let mut change = ModuleBlockChange::new();
+
+        match &self.state {
+            None => {}
+            Some(state) => {
+                match state.as_str() {
+                    "present" => {
+                        assert!(hosthandler.ssh2.sshsession.authenticated());
+                
+                        // Check is package is already installed or needs to be
+                        if ! is_package_installed(hosthandler, self.package.clone().unwrap()) {
+                            // Package is absent and needs to be installed
+                            change = ModuleBlockChange {
+                                module: Some(
+                                    ModuleBlock::Apt(AptBlock{
+                                        state: Some("install".to_string()),
+                                        package: Some(self.package.clone().unwrap()),
+                                        upgrade: None
+                                    })
+                                )
+                            };
+                        }
+                    }
+                    "absent" => {
+                        assert!(hosthandler.ssh2.sshsession.authenticated());
+                
+                        // Check is package is already absent or needs to be removed
+                        if is_package_installed(hosthandler, self.package.clone().unwrap()) {
+                            // Package is present and needs to be removed
+                            change = ModuleBlockChange {
+                                module: Some(
+                                    ModuleBlock::Apt(AptBlock{
+                                        state: Some("remove".to_string()),
+                                        package: Some(self.package.clone().unwrap()),
+                                        upgrade: None
+                                    })
+                                )
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
-            "remove" => { ModuleBlockChange::new_none() }
-            "update" => { ModuleBlockChange::new_none() }
-            _ => { ModuleBlockChange::new_none() }
         }
+
+        match self.upgrade {
+            None => {}
+            Some(value) => {
+                if value {
+                    change = ModuleBlockChange {
+                        module: Some(
+                            ModuleBlock::Apt(AptBlock{
+                                state: None,
+                                package: None,
+                                upgrade: Some(true)
+                                })
+                            )
+                        };
+                }
+            }
+        }
+
+        return change;
     }
 
     pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
-        match self.action.as_str() {
-            "install" => {
-                println!("**** Install package {}", self.package.clone().unwrap());
-                                
-                assert!(hosthandler.ssh2.sshsession.authenticated());
-        
-                let s = hosthandler.run_cmd("echo 'Install stuff on' $(cat /etc/os-release | grep ^NAME)").unwrap();
-                
-                ModuleBlockResult::from(
-                    Some(0),
-                    Some(s),
-                    None)
+        assert!(hosthandler.ssh2.sshsession.authenticated());
 
+        let mut result = ModuleBlockResult::new();
+
+        match &self.state {
+            None => {}
+            Some(state) => {
+                match state.as_str() {
+                    "install" => {                              
+                        let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get install -y {}", self.package.clone().unwrap());
+                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                        
+                        result = ModuleBlockResult::from(
+                            Some(cmd_result.exitcode),
+                            Some(cmd_result.stdout),
+                            None)
+        
+                    }
+                    "remove" => {
+                        let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get autoremove -y {}", self.package.clone().unwrap());
+                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                        
+                        result = ModuleBlockResult::from(
+                            Some(cmd_result.exitcode),
+                            Some(cmd_result.stdout),
+                            None)
+                    }
+                    _ => {}
+                }
             }
-            "remove" => {
-                println!("**** Remove package {}", self.package.clone().unwrap());
-                ModuleBlockResult::new_none()
-            }
-            _ => { ModuleBlockResult::new_none() }
         }
+
+        match self.upgrade {
+            None => {}
+            Some(value) => {
+                if value {
+                    let cmd = "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y";
+                    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+                    
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        None);
+                }
+            }
+        }
+
+        return result;
     }
 }
 
-// -- Niveau worker : après réception d'un Assignment, création d'un HostHandler
-// avec infos utiles trouvées dans Assignment (HostHandler non initialisé)
-// hosthandler.new()
-// hosthandler.init()
+fn is_apt_working(hosthandler: &mut HostHandler) -> bool {
 
-// -- Niveau module : utilisation du HostHandler
-// hosthandler.run_cmd()
-// ...
+    let cmd = "apt-get check";
+    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+
+    if cmd_result.exitcode != 0 {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+fn is_package_installed(hosthandler: &mut HostHandler, package: String) -> bool {
+    let test = hosthandler.run_cmd(
+        format!("apt-cache policy {}", package).as_str()
+    ).unwrap();
+
+    match test.stdout.find("Installed: (none)") {
+        Some(_) => { return false; }
+        None => { return true; }
+    }
+}
