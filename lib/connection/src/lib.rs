@@ -52,10 +52,10 @@ impl HostHandler {
         }
     }
     
-    pub fn run_cmd(&mut self, cmd: &str) -> Result<String, Error> {
+    pub fn run_cmd(&mut self, cmd: &str) -> Result<CmdResult, Error> {
         match self.connectionmode {
             ConnectionMode::Unset => { return Err(Error::MissingInitialization); }
-            ConnectionMode::LocalHost => { return Ok(String::from("PLACEHOLDER")); } // Nothing to initialize when working on localhost
+            ConnectionMode::LocalHost => { return Ok(CmdResult::new()); } // Nothing to initialize when working on localhost
             ConnectionMode::Ssh2 => { self.ssh2.run_cmd(cmd) }
             // ConnectionMode::Ssh3 => { self.ssh3.unwrap().run_cmd() }
         }
@@ -73,3 +73,16 @@ trait HostHandling {
     fn get_file(); // Download a file from the host
 }
 
+pub struct CmdResult {
+    pub exitcode: i32,
+    pub stdout: String
+}
+
+impl CmdResult {
+    pub fn new() -> CmdResult {
+        CmdResult {
+            exitcode: 0,
+            stdout: String::new()
+        }
+    }
+}

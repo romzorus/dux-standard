@@ -4,6 +4,8 @@ use std::net::TcpStream;
 use errors::Error;
 use std::io::Read;
 
+use crate::CmdResult;
+
 #[derive(Clone)]
 pub struct Ssh2HostHandler {
     pub hostaddress: String,
@@ -61,7 +63,7 @@ impl Ssh2HostHandler {
         }
     }
     
-    pub fn run_cmd(&self, cmd: &str) -> Result<String, Error> {
+    pub fn run_cmd(&self, cmd: &str) -> Result<CmdResult, Error> {
         assert!(self.authmode != Ssh2AuthMode::Unset, "Can't run command on remote host : authentication unset");
         
         let mut channel = self.sshsession.channel_session().unwrap();
@@ -70,7 +72,12 @@ impl Ssh2HostHandler {
         channel.read_to_string(&mut s).unwrap();
         let _ = channel.wait_close();
         
-        return Ok(s);
+        return Ok(
+            CmdResult {
+                exitcode: channel.exit_status().unwrap(),
+                stdout: s,
+            }
+        );
     }
 }
 
