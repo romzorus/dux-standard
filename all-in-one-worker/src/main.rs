@@ -11,9 +11,8 @@ fn main() {
 
     // Build a TaskList (YAML is assumed for now)
     let tasklist = tasklist_parser(
-        tasklist_get_from_file(&cliargs.tasklist),
-        ContentFormat::Yaml,
-    );
+        tasklist_get_from_file(&cliargs.tasklist)
+        );
 
     // Build a HostList (not implemented yet)
     let hostlist = hostlist_parser(

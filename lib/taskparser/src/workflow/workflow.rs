@@ -1,16 +1,22 @@
 use std::process::exit;
 use taskexec::workflow::task::TaskList;
-use crate::fileformats::ContentFormat;
 use crate::fileformats::json::json_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
 
-pub fn tasklist_parser(tasklistcontent: String, format: ContentFormat) -> TaskList {
+pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
 
-    match format {
-        ContentFormat::Json => { json_tasklist_parser(&tasklistcontent) }
-        ContentFormat::Yaml => { yaml_tasklist_parser(&tasklistcontent) }
-        _ => { exit(1) } // Placeholder : error handling required here
+    match yaml_tasklist_parser(&tasklistcontent) {
+        Ok(parsed_content) => { return parsed_content; }
+        Err(_e) => {
+            match json_tasklist_parser(&tasklistcontent) {
+                Ok(parsed_content) => { return parsed_content; }
+                Err(_e) => {
+                    exit(1) // Placeholder : error handling required here
+                }
+            }
+        }
     }
+
 }
 
 pub fn tasklist_get_from_file(file_path: &str) -> String {
@@ -23,3 +29,12 @@ pub fn tasklist_get_from_interactive_mode() -> String {
     // into a Task, executed on the group of hosts, and the results arrive in "realtime".
     String::new()
 }
+
+// Will be usefull in the future
+// pub enum ContentFormat {
+//     Interactive,
+//     Json,
+//     Pythonscript,
+//     Shellscript,
+//     Yaml
+// }
