@@ -1,4 +1,4 @@
-use cli::{parse_cli_args, CliArgs};
+use cli::prelude::*;
 use connection::prelude::*;
 use hostparser::*;
 use std::path::PathBuf;
@@ -71,21 +71,11 @@ fn main() {
     //  -> Run each Assignment
     for mut assignment in assignmentlist.into_iter() {
 
-        
         let execresult = assignment.dry_run().apply_changelist(&mut assignment.hosthandler);
         
-        println!("**** Host : {} *****", execresult.host);
-        for result in execresult.clone().results.into_iter() {
-            for blockresult in result.list.into_iter() {
-                for moduleblockresult in blockresult.into_iter() {
-                    if let Some(content) = moduleblockresult.stdout {
-                        println!("{}", content.trim());
-                    }
-                }
-            }
-        }
-
         results.push(execresult);
     }
     // results now contains all the output of the run, per host
+
+    display_output(results);
 }
