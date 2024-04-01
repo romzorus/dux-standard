@@ -55,6 +55,7 @@ impl TaskResult {
 #[derive(Debug, Clone)]
 pub struct TaskListResult {
     pub correlationid: String,
+    pub host: String,
     pub results: Vec<TaskResult>
 }
 
@@ -62,13 +63,15 @@ impl TaskListResult {
     pub fn new(correlationid: String) -> TaskListResult {
         TaskListResult {
             correlationid,
+            host: String::new(),
             results: Vec::<TaskResult>::new()
         }
     }
 
-    pub fn from(correlationid: String, results: Vec<TaskResult>) -> TaskListResult {
+    pub fn from(correlationid: String, host: String, results: Vec<TaskResult>) -> TaskListResult {
         TaskListResult {
             correlationid,
+            host,
             results
         }
     }
