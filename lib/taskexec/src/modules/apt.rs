@@ -1,7 +1,8 @@
 // APT Module : handle packages in Debian-like distributions
 
 use serde::Deserialize;
-use crate::workflow::{change::ModuleBlockChange, result::ModuleBlockResult};
+use crate::workflow::change::ModuleBlockChange;
+use crate::workflow::result::{ModuleBlockResult, ModuleBlockStatus};
 use crate::modules::ModuleBlockAction;
 use connection::prelude::*;
 
@@ -100,28 +101,61 @@ impl AptBlockAction {
                 let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get install -y {}", self.package.clone().unwrap());
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
-                result = ModuleBlockResult::from(
-                    Some(cmd_result.exitcode),
-                    Some(cmd_result.stdout),
-                    None)
+                if cmd_result.exitcode == 0 {
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ModuleBlockStatus::ChangeSuccessful(
+                            format!("{} install successful", self.package.clone().unwrap())
+                        ));
+                } else {
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ModuleBlockStatus::ChangeFailed(
+                            format!("{} install failed", self.package.clone().unwrap())
+                        ));
+                }
             }
             "remove" => {
                 let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get autoremove -y {}", self.package.clone().unwrap());
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
-                result = ModuleBlockResult::from(
-                    Some(cmd_result.exitcode),
-                    Some(cmd_result.stdout),
-                    None)
+                if cmd_result.exitcode == 0 {
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ModuleBlockStatus::ChangeSuccessful(
+                            format!("{} removal successful", self.package.clone().unwrap())
+                        ));
+                } else {
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ModuleBlockStatus::ChangeFailed(
+                            format!("{} removal failed", self.package.clone().unwrap())
+                        ));
+                }
             }
             "upgrade" => {
                 let cmd = "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y";
                 let cmd_result = hosthandler.run_cmd(cmd).unwrap();
                 
+                if cmd_result.exitcode == 0 {
                 result = ModuleBlockResult::from(
                     Some(cmd_result.exitcode),
                     Some(cmd_result.stdout),
-                    None);
+                    ModuleBlockStatus::ChangeSuccessful(
+                        String::from("upgrade successful")
+                    ));
+                } else {
+                    result = ModuleBlockResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ModuleBlockStatus::ChangeFailed(
+                            String::from("upgrade failed")
+                        ));
+                }
             }
             _ => {}
         }
