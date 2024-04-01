@@ -8,13 +8,13 @@ use connection::prelude::*;
 
 #[derive(Debug, Clone)]
 pub struct ModuleBlockChange {
-    pub module: Option<ModuleBlock>
+    pub module: Option<Vec<ModuleBlock>>
 }
 
 impl ModuleBlockChange {
     pub fn new() -> ModuleBlockChange {
         ModuleBlockChange {
-            module: Some(ModuleBlock::new())
+            module: Some(Vec::new())
         }
     }
 
@@ -24,17 +24,28 @@ impl ModuleBlockChange {
         }
     }
 
-    pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
+    pub fn from(module: Option<Vec<ModuleBlock>>) -> ModuleBlockChange {
+        ModuleBlockChange {
+            module
+        }
+    }
+
+    pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> Vec<ModuleBlockResult> {
         match self.module.clone() {
             Some(content) => {
-                match content {
-                    ModuleBlock::None => {ModuleBlockResult::none() }
-                    ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
-                    ModuleBlock::Dnf(block) => { block.apply_moduleblock_change(hosthandler) }
-                    ModuleBlock::Yum(block) => { block.apply_moduleblock_change(hosthandler) }
+                let mut results: Vec<ModuleBlockResult> = Vec::new();
+                for block in content {
+                    let result = match block {
+                        ModuleBlock::None => { ModuleBlockResult::none() }
+                        ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleBlock::Dnf(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleBlock::Yum(block) => { block.apply_moduleblock_change(hosthandler) }
+                    };
+                    results.push(result);
                 }
+                return results;
             }
-            None => { ModuleBlockResult::none() }
+            None => { Vec::new() } // TODO : instead of returning an empty vector, return a proper error
         }
     }
 }
@@ -106,7 +117,7 @@ impl ChangeList {
         
                             for moduleblockchange in taskchange.list.unwrap().clone().into_iter() {
                                 let moduleblockresult = moduleblockchange.apply_moduleblockchange(hosthandler);
-                                list.push(moduleblockresult);
+                                list.extend(moduleblockresult);
                             }
                 
                             tasklistresult.results.push(TaskResult { list: Some(list) });

@@ -27,7 +27,7 @@ impl YumDnfBlock {
             return ModuleBlockChange::none();
         }
 
-        let mut change = ModuleBlockChange::new();
+        let mut changes: Vec<ModuleBlock> = Vec::new();
 
         match &self.state {
             None => {}
@@ -39,15 +39,13 @@ impl YumDnfBlock {
                         // Check is package is already installed or needs to be
                         if ! is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
-                            change = ModuleBlockChange {
-                                module: Some(
+                            changes.push(
                                     ModuleBlock::Dnf(YumDnfBlock{
                                         state: Some("install".to_string()),
                                         package: Some(self.package.clone().unwrap()),
                                         upgrade: None
                                     })
-                                )
-                            };
+                                );
                         }
                     }
                     "absent" => {
@@ -56,15 +54,13 @@ impl YumDnfBlock {
                         // Check is package is already absent or needs to be removed
                         if is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is present and needs to be removed
-                            change = ModuleBlockChange {
-                                module: Some(
+                            changes.push(
                                     ModuleBlock::Dnf(YumDnfBlock{
                                         state: Some("remove".to_string()),
                                         package: Some(self.package.clone().unwrap()),
                                         upgrade: None
                                     })
-                                )
-                            }
+                                );
                         }
                     }
                     _ => {}
@@ -76,20 +72,18 @@ impl YumDnfBlock {
             None => {}
             Some(value) => {
                 if value {
-                    change = ModuleBlockChange {
-                        module: Some(
+                    changes.push(
                             ModuleBlock::Dnf(YumDnfBlock{
                                 state: None,
                                 package: None,
                                 upgrade: Some(true)
-                                })
-                            )
-                        };
+                            })
+                        );
                 }
             }
         }
 
-        return change;
+        return ModuleBlockChange::from(Some(changes));
     }
 
     pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {

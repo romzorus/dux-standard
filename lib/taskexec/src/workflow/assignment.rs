@@ -62,10 +62,11 @@ impl Assignment {
         self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler)
         
     }
-
+    
+    // TODO : allow direct run with this method
     pub fn apply(&self) -> TaskListResult {
         assert_eq!(self.runningmode, RunningMode::Apply);
-        TaskListResult::new(self.correlationid.clone())
+        TaskListResult::new(self.correlationid.clone()) // PLACEHOLDER
 
     }
 }
