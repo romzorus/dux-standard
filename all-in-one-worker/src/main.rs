@@ -71,9 +71,10 @@ fn main() {
     //  -> Run each Assignment
     for mut assignment in assignmentlist.into_iter() {
 
-        println!("**** Host : {} *****", assignment.host);
+        
         let execresult = assignment.dry_run().apply_changelist(&mut assignment.hosthandler);
         
+        println!("**** Host : {} *****", execresult.host);
         for result in execresult.clone().results.into_iter() {
             for blockresult in result.list.into_iter() {
                 for moduleblockresult in blockresult.into_iter() {
