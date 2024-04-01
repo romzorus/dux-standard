@@ -2,13 +2,13 @@
 
 use crate::workflow::result::{TaskResult, TaskListResult};
 use crate::workflow::result::ModuleBlockResult;
-use crate::modules::ModuleBlock;
+use crate::modules::{ModuleBlockExpectedState, ModuleBlockAction};
 use connection::prelude::*;
 
 
 #[derive(Debug, Clone)]
 pub struct ModuleBlockChange {
-    pub module: Option<Vec<ModuleBlock>>
+    pub module: Option<Vec<ModuleBlockAction>>
 }
 
 impl ModuleBlockChange {
@@ -24,7 +24,7 @@ impl ModuleBlockChange {
         }
     }
 
-    pub fn from(module: Option<Vec<ModuleBlock>>) -> ModuleBlockChange {
+    pub fn from(module: Option<Vec<ModuleBlockAction>>) -> ModuleBlockChange {
         ModuleBlockChange {
             module
         }
@@ -36,10 +36,9 @@ impl ModuleBlockChange {
                 let mut results: Vec<ModuleBlockResult> = Vec::new();
                 for block in content {
                     let result = match block {
-                        ModuleBlock::None => { ModuleBlockResult::none() }
-                        ModuleBlock::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
-                        ModuleBlock::Dnf(block) => { block.apply_moduleblock_change(hosthandler) }
-                        ModuleBlock::Yum(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleBlockAction::None => { ModuleBlockResult::none() }
+                        ModuleBlockAction::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleBlockAction::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
                     };
                     results.push(result);
                 }

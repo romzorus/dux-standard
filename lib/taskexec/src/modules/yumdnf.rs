@@ -1,18 +1,18 @@
-// APT Module : handle packages in Debian-like distributions
+// YUM / DNF Module : handle packages in Fedora-like distributions
 
 use serde::Deserialize;
 use crate::workflow::{change::ModuleBlockChange, result::ModuleBlockResult};
-use crate::modules::ModuleBlock;
+use crate::modules::ModuleBlockAction;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct YumDnfBlock {
+pub struct YumDnfBlockExpectedState {
     state: Option<String>,
     package: Option<String>,
     upgrade: Option<bool>
 }
 
-impl YumDnfBlock {
+impl YumDnfBlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
@@ -23,11 +23,11 @@ impl YumDnfBlock {
         } else if is_yum_working(hosthandler) {
             tool = String::from("yum");
         } else {
-            println!("[DRY-RUN] : YUM and DNF absent or not working properly on {}", hosthandler.hostaddress);
+            // TODO : handle this case with an error
             return ModuleBlockChange::none();
         }
 
-        let mut changes: Vec<ModuleBlock> = Vec::new();
+        let mut changes: Vec<ModuleBlockAction> = Vec::new();
 
         match &self.state {
             None => {}
@@ -40,12 +40,10 @@ impl YumDnfBlock {
                         if ! is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
                             changes.push(
-                                    ModuleBlock::Dnf(YumDnfBlock{
-                                        state: Some("install".to_string()),
-                                        package: Some(self.package.clone().unwrap()),
-                                        upgrade: None
-                                    })
-                                );
+                                ModuleBlockAction::YumDnf(
+                                    YumDnfBlockAction::from("install", Some(self.package.clone().unwrap()))
+                                )
+                            );
                         }
                     }
                     "absent" => {
@@ -55,12 +53,10 @@ impl YumDnfBlock {
                         if is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is present and needs to be removed
                             changes.push(
-                                    ModuleBlock::Dnf(YumDnfBlock{
-                                        state: Some("remove".to_string()),
-                                        package: Some(self.package.clone().unwrap()),
-                                        upgrade: None
-                                    })
-                                );
+                                ModuleBlockAction::YumDnf(
+                                    YumDnfBlockAction::from("remove", Some(self.package.clone().unwrap()))
+                                )
+                            );
                         }
                     }
                     _ => {}
@@ -73,17 +69,31 @@ impl YumDnfBlock {
             Some(value) => {
                 if value {
                     changes.push(
-                            ModuleBlock::Dnf(YumDnfBlock{
-                                state: None,
-                                package: None,
-                                upgrade: Some(true)
-                            })
-                        );
+                        ModuleBlockAction::YumDnf(
+                            YumDnfBlockAction::from("upgrade", None)
+                        )
+                    );
                 }
             }
         }
 
         return ModuleBlockChange::from(Some(changes));
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct YumDnfBlockAction {
+    action: String,
+    package: Option<String>,
+}
+
+impl YumDnfBlockAction {
+
+    pub fn from(action: &str, package: Option<String>) -> YumDnfBlockAction {
+        YumDnfBlockAction {
+            action: action.to_string(),
+            package
+        }
     }
 
     pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
@@ -96,53 +106,41 @@ impl YumDnfBlock {
         } else if is_yum_working(hosthandler) {
             tool = String::from("yum");
         } else {
-            println!("[APPLY] : YUM and DNF absent or not working properly on {}", hosthandler.hostaddress);
+            // TODO : handle this case with an error
             return ModuleBlockResult::none();
         }
 
         let mut result = ModuleBlockResult::new();
 
-        match &self.state {
-            None => {}
-            Some(state) => {
-                match state.as_str() {
-                    "install" => {                              
-                        let cmd = format!("{tool} install -y {}", self.package.clone().unwrap());
-                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
-                        
-                        result = ModuleBlockResult::from(
-                            Some(cmd_result.exitcode),
-                            Some(cmd_result.stdout),
-                            None)
-        
-                    }
-                    "remove" => {
-                        let cmd = format!("{tool} remove -y {}", self.package.clone().unwrap());
-                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
-                        
-                        result = ModuleBlockResult::from(
-                            Some(cmd_result.exitcode),
-                            Some(cmd_result.stdout),
-                            None)
-                    }
-                    _ => {}
-                }
+        match self.action.as_str() {
+            "install" => {
+                let cmd = format!("{tool} install -y {}", self.package.clone().unwrap());
+                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None);
             }
-        }
-
-        match self.upgrade {
-            None => {}
-            Some(value) => {
-                if value {
-                    let cmd = "{tool} update --refresh";
-                    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
-                    
-                    result = ModuleBlockResult::from(
-                        Some(cmd_result.exitcode),
-                        Some(cmd_result.stdout),
-                        None);
-                }
+            "remove" => {
+                let cmd = format!("{tool} remove -y {}", self.package.clone().unwrap());
+                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None);
             }
+            "upgrade" => {
+                let cmd = "{tool} update --refresh";
+                let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None);
+            }
+            _ => {}
         }
 
         return result;

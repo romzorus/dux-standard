@@ -1,4 +1,4 @@
-pub use crate::modules::ModuleBlock;
+pub use crate::modules::{ModuleBlockExpectedState, ModuleBlockAction};
 pub use crate::workflow::assignment::{Assignment, RunningMode};
 pub use crate::workflow::change::ChangeList;
 pub use crate::workflow::result::TaskListResult;

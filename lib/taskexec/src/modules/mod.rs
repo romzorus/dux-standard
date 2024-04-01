@@ -7,24 +7,33 @@ use crate::workflow::change::ModuleBlockChange;
 use crate::modules::blocks::*;
 use connection::prelude::*;
 
+use self::yumdnf::YumDnfBlockAction;
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all="lowercase")]
-pub enum ModuleBlock {
+pub enum ModuleBlockExpectedState {
     None, // Used for new() methods, initializations and errors
-    Apt(AptBlock),
-    Dnf(YumDnfBlock),
-    Yum(YumDnfBlock)
+    Apt(AptBlockExpectedState),
+    Dnf(YumDnfBlockExpectedState),
+    Yum(YumDnfBlockExpectedState)
 }
 
-impl ModuleBlock {
-    pub fn new() -> ModuleBlock { ModuleBlock::None }
+impl ModuleBlockExpectedState {
+    pub fn new() -> ModuleBlockExpectedState { ModuleBlockExpectedState::None }
 
     pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         match &self {
-            ModuleBlock::None => { ModuleBlockChange::none() }
-            ModuleBlock::Apt(block) => { block.dry_run_block(hosthandler) }
-            ModuleBlock::Dnf(block) => { block.dry_run_block(hosthandler) }
-            ModuleBlock::Yum(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlockExpectedState::None => { ModuleBlockChange::none() }
+            ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler) }
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum ModuleBlockAction {
+    None,
+    Apt(AptBlockAction),
+    YumDnf(YumDnfBlockAction)
 }

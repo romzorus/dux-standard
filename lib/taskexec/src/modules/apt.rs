@@ -2,26 +2,26 @@
 
 use serde::Deserialize;
 use crate::workflow::{change::ModuleBlockChange, result::ModuleBlockResult};
-use crate::modules::ModuleBlock;
+use crate::modules::ModuleBlockAction;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct AptBlock {
+pub struct AptBlockExpectedState {
     state: Option<String>,
     package: Option<String>,
     upgrade: Option<bool>
 }
 
-impl AptBlock {
+impl AptBlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         if ! is_apt_working(hosthandler) {
-            println!("[DRY-RUN] : APT absent or not working properly on {}", hosthandler.hostaddress);
+            // TODO : handle this case with an error
             return ModuleBlockChange::none();
         }
 
-        let mut changes: Vec<ModuleBlock> = Vec::new();
+        let mut changes: Vec<ModuleBlockAction> = Vec::new();
 
         match &self.state {
             None => {}
@@ -34,12 +34,10 @@ impl AptBlock {
                         if ! is_package_installed(hosthandler, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
                             changes.push(
-                                    ModuleBlock::Apt(AptBlock{
-                                        state: Some("install".to_string()),
-                                        package: Some(self.package.clone().unwrap()),
-                                        upgrade: None
-                                    })
-                                );
+                                ModuleBlockAction::Apt(
+                                    AptBlockAction::from("install", Some(self.package.clone().unwrap()))
+                                )
+                            );
                         }
                     }
                     "absent" => {
@@ -49,12 +47,10 @@ impl AptBlock {
                         if is_package_installed(hosthandler, self.package.clone().unwrap()) {
                             // Package is present and needs to be removed
                             changes.push(
-                                    ModuleBlock::Apt(AptBlock{
-                                        state: Some("remove".to_string()),
-                                        package: Some(self.package.clone().unwrap()),
-                                        upgrade: None
-                                    })
-                                );
+                                ModuleBlockAction::Apt(
+                                    AptBlockAction::from("remove", Some(self.package.clone().unwrap()))
+                                )
+                            );
                         }
                     }
                     _ => {}
@@ -67,17 +63,31 @@ impl AptBlock {
             Some(value) => {
                 if value {
                     changes.push(
-                            ModuleBlock::Apt(AptBlock{
-                                state: None,
-                                package: None,
-                                upgrade: Some(true)
-                                })
-                            );
+                        ModuleBlockAction::Apt(
+                            AptBlockAction::from("upgrade", None)
+                        )
+                    );
                 }
             }
         }
 
         return ModuleBlockChange::from(Some(changes));
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct AptBlockAction {
+    action: String,
+    package: Option<String>,
+}
+
+impl AptBlockAction {
+
+    pub fn from(action: &str, package: Option<String>) -> AptBlockAction {
+        AptBlockAction {
+            action: action.to_string(),
+            package
+        }
     }
 
     pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
@@ -85,47 +95,35 @@ impl AptBlock {
 
         let mut result = ModuleBlockResult::new();
 
-        match &self.state {
-            None => {}
-            Some(state) => {
-                match state.as_str() {
-                    "install" => {                              
-                        let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get install -y {}", self.package.clone().unwrap());
-                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
-                        
-                        result = ModuleBlockResult::from(
-                            Some(cmd_result.exitcode),
-                            Some(cmd_result.stdout),
-                            None)
-        
-                    }
-                    "remove" => {
-                        let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get autoremove -y {}", self.package.clone().unwrap());
-                        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
-                        
-                        result = ModuleBlockResult::from(
-                            Some(cmd_result.exitcode),
-                            Some(cmd_result.stdout),
-                            None)
-                    }
-                    _ => {}
-                }
+        match self.action.as_str() {
+            "install" => {
+                let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get install -y {}", self.package.clone().unwrap());
+                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None)
             }
-        }
-
-        match self.upgrade {
-            None => {}
-            Some(value) => {
-                if value {
-                    let cmd = "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y";
-                    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
-                    
-                    result = ModuleBlockResult::from(
-                        Some(cmd_result.exitcode),
-                        Some(cmd_result.stdout),
-                        None);
-                }
+            "remove" => {
+                let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get autoremove -y {}", self.package.clone().unwrap());
+                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None)
             }
+            "upgrade" => {
+                let cmd = "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y";
+                let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+                
+                result = ModuleBlockResult::from(
+                    Some(cmd_result.exitcode),
+                    Some(cmd_result.stdout),
+                    None);
+            }
+            _ => {}
         }
 
         return result;
