@@ -101,21 +101,25 @@ impl ChangeList {
 
     pub fn apply_changelist(&self, hosthandler: &mut HostHandler) -> TaskListResult {
 
-        match self.list {
-            None => { TaskListResult::from(self.correlationid.clone(), vec![])}
-            Some(_) => {
-                let mut tasklistresult = TaskListResult::new(self.correlationid.clone());
+        match &self.list {
+            None => { TaskListResult::none(self.correlationid.clone(), hosthandler.hostaddress.clone())}
+            Some(taskchangelist) => {
 
-                for taskchange in self.list.clone().unwrap().clone().into_iter() {
+                let mut tasklistresult = TaskListResult::new(
+                    self.correlationid.clone(),
+                    hosthandler.hostaddress.clone(),
+                );
 
-                    match taskchange.list {
+                for taskchange in taskchangelist {
+
+                    match &taskchange.list {
                         None => {
                             tasklistresult.results.push(TaskResult { list: None });
                         }
-                        Some(_) => {
+                        Some(taskchangecontent) => {
                             let mut list: Vec<ModuleBlockResult> = Vec::new();
         
-                            for moduleblockchange in taskchange.list.unwrap().clone().into_iter() {
+                            for moduleblockchange in taskchangecontent {
                                 let moduleblockresult = moduleblockchange.apply_moduleblockchange(hosthandler);
                                 list.extend(moduleblockresult);
                             }

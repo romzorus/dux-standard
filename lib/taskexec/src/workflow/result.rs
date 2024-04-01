@@ -60,10 +60,21 @@ pub struct TaskListResult {
 }
 
 impl TaskListResult {
-    pub fn new(correlationid: String) -> TaskListResult {
+    pub fn new(correlationid: String, host: String) -> TaskListResult {
         TaskListResult {
             correlationid,
-            host: String::new(),
+            host,
+            results: Vec::<TaskResult>::new()
+        }
+    }
+
+    // The 'results' field could be turned into an Option but this complexifies the apply_changelist() method
+    // in change.rs (we need to deconstruct...etc). For now, results = 'None' is just an empty vector.
+    // TODO : turn 'results' into an Option<Vec<TaskResult>>.
+    pub fn none(correlationid: String, host: String) -> TaskListResult {
+        TaskListResult {
+            correlationid,
+            host,
             results: Vec::<TaskResult>::new()
         }
     }

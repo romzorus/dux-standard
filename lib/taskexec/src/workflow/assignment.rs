@@ -66,7 +66,7 @@ impl Assignment {
     // TODO : allow direct run with this method
     pub fn apply(&self) -> TaskListResult {
         assert_eq!(self.runningmode, RunningMode::Apply);
-        TaskListResult::new(self.correlationid.clone()) // PLACEHOLDER
+        TaskListResult::new(self.correlationid.clone(), self.hosthandler.hostaddress.clone()) // PLACEHOLDER
 
     }
 }
