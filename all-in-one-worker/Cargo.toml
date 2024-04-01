@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 taskexec = { path = "../lib/taskexec" }
 taskparser = { path = "../lib/taskparser" }
-cliparser = { path = "../lib/cliparser" }
+cli = { path = "../lib/cli" }
 hostparser = { path = "../lib/hostparser" }
 connection = { path = "../lib/connection" }
 ssh2 = "0.9.4"

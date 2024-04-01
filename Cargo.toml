@@ -2,7 +2,7 @@
 members = [
 	"lib/taskexec",
 	"lib/taskparser",
-	"lib/cliparser",
+	"lib/cli",
 	"all-in-one-worker",
 	"lib/hostparser",
 	"lib/connection",

@@ -1,4 +1,4 @@
-use cliparser::{parse_cli_args, CliArgs};
+use cli::{parse_cli_args, CliArgs};
 use connection::prelude::*;
 use hostparser::*;
 use std::path::PathBuf;
