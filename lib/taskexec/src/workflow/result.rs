@@ -1,89 +1,124 @@
 // This part is used to define the result structure.
 
 #[derive(Debug, Clone)]
-pub struct ModuleBlockResult {
+pub struct ApiCallResult {
     pub exitcode: Option<i32>,
-    pub stdout: Option<String>,
-    pub stderr: Option<String>
+    pub output: Option<String>,
+    pub status: ApiCallStatus
+}
+
+impl ApiCallResult {
+    pub fn new() -> ApiCallResult {
+        ApiCallResult {
+            exitcode: None,
+            output: None,
+            status: ApiCallStatus::Unset
+        }
+    }
+
+    pub fn none() -> ApiCallResult {
+        ApiCallResult {
+            exitcode: None,
+            output: None,
+            status: ApiCallStatus::None
+        }
+    }
+
+    pub fn from(exitcode: Option<i32>, output: Option<String>, status: ApiCallStatus) -> ApiCallResult {
+        ApiCallResult {
+            exitcode,
+            output,
+            status
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ModuleBlockResult {
+    pub apicallresults: Option<Vec<ApiCallResult>>
 }
 
 impl ModuleBlockResult {
     pub fn new() -> ModuleBlockResult {
         ModuleBlockResult {
-            exitcode: Some(0),
-            stdout: Some(String::new()),
-            stderr: Some(String::new())
+            apicallresults: Some(Vec::new())
         }
     }
 
     pub fn none() -> ModuleBlockResult {
         ModuleBlockResult {
-            exitcode: None,
-            stdout: None,
-            stderr: None
+            apicallresults: Some(Vec::from([ApiCallResult::none()]))
         }
     }
 
-    pub fn from(exitcode: Option<i32>, stdout: Option<String>, stderr: Option<String>) -> ModuleBlockResult {
+    pub fn from(apicallresults: Option<Vec<ApiCallResult>>) -> ModuleBlockResult {
         ModuleBlockResult {
-            exitcode,
-            stdout,
-            stderr
+            apicallresults
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TaskResult {
-    pub list: Option<Vec<ModuleBlockResult>>
+    pub stepresults: Option<Vec<ModuleBlockResult>>
 }
 
 impl TaskResult {
     pub fn new() -> TaskResult {
         TaskResult {
-            list: Some(Vec::new())
+            stepresults: Some(Vec::new())
         }
     }
 
     pub fn none() -> TaskResult {
         TaskResult {
-            list: None
+            stepresults: None
+        }
+    }
+
+    pub fn from(stepresults: Option<Vec<ModuleBlockResult>>) -> TaskResult {
+        TaskResult {
+            stepresults
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TaskListResult {
-    pub correlationid: String,
-    pub host: String,
-    pub results: Vec<TaskResult>
+    pub taskresults: Vec<TaskResult>,
 }
 
 impl TaskListResult {
-    pub fn new(correlationid: String, host: String) -> TaskListResult {
+    pub fn new() -> TaskListResult {
         TaskListResult {
-            correlationid,
-            host,
-            results: Vec::<TaskResult>::new()
+            taskresults: Vec::new(),
         }
     }
 
     // The 'results' field could be turned into an Option but this complexifies the apply_changelist() method
     // in change.rs (we need to deconstruct...etc). For now, results = 'None' is just an empty vector.
     // TODO : turn 'results' into an Option<Vec<TaskResult>>.
-    pub fn none(correlationid: String, host: String) -> TaskListResult {
+    pub fn none() -> TaskListResult {
+
+        // TODO : set all blockmatrix results to None as well
         TaskListResult {
-            correlationid,
-            host,
-            results: Vec::<TaskResult>::new()
+            taskresults: Vec::new(),
+
         }
     }
 
-    pub fn from(correlationid: String, host: String, results: Vec<TaskResult>) -> TaskListResult {
+    pub fn from(taskresults: Vec<TaskResult>) -> TaskListResult {
         TaskListResult {
-            correlationid,
-            host,
-            results
+            taskresults,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum ApiCallStatus {
+    Unset,
+    None,
+    AlreadyMatched,
+    ChangeSuccessful(String),
+    ChangeFailed(String)
 }

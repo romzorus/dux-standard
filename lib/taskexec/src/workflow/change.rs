@@ -2,134 +2,134 @@
 
 use crate::workflow::result::{TaskResult, TaskListResult};
 use crate::workflow::result::ModuleBlockResult;
-use crate::modules::{ModuleBlockExpectedState, ModuleBlockAction};
+use crate::modules::ModuleApiCall;
 use connection::prelude::*;
+
+use super::result::ApiCallResult;
 
 
 #[derive(Debug, Clone)]
 pub struct ModuleBlockChange {
-    pub module: Option<Vec<ModuleBlockAction>>
+    pub apicalls: Option<Vec<ModuleApiCall>>
 }
 
 impl ModuleBlockChange {
     pub fn new() -> ModuleBlockChange {
         ModuleBlockChange {
-            module: Some(Vec::new())
+            apicalls: Some(Vec::new())
         }
     }
 
     pub fn none() -> ModuleBlockChange {
         ModuleBlockChange {
-            module: None
+            apicalls: None
         }
     }
 
-    pub fn from(module: Option<Vec<ModuleBlockAction>>) -> ModuleBlockChange {
+    pub fn from(apicalls: Option<Vec<ModuleApiCall>>) -> ModuleBlockChange {
         ModuleBlockChange {
-            module
+            apicalls
         }
     }
 
-    pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> Vec<ModuleBlockResult> {
-        match self.module.clone() {
-            Some(content) => {
-                let mut results: Vec<ModuleBlockResult> = Vec::new();
-                for block in content {
-                    let result = match block {
-                        ModuleBlockAction::None => { ModuleBlockResult::none() }
-                        ModuleBlockAction::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
-                        ModuleBlockAction::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
+    pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
+        match self.apicalls.clone() {
+            Some(moduleapicalllist) => {
+                let mut results: Vec<ApiCallResult> = Vec::new();
+                for moduleapicall in moduleapicalllist {
+                    let apicallresult = match moduleapicall {
+                        ModuleApiCall::None => { ApiCallResult::none() }
+                        ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleApiCall::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
                     };
-                    results.push(result);
+                    results.push(apicallresult);
                 }
-                return results;
+                return ModuleBlockResult::from(Some(results));
             }
-            None => { Vec::new() } // TODO : instead of returning an empty vector, return a proper error
+            None => { ModuleBlockResult::none() }
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TaskChange {
-    pub list: Option<Vec<ModuleBlockChange>>
+    pub stepchanges: Option<Vec<ModuleBlockChange>>
 }
 
 impl TaskChange {
     pub fn new() -> TaskChange {
         TaskChange {
-            list: Some(Vec::new())
+            stepchanges: Some(Vec::new())
         }
     }
 
     pub fn none() -> TaskChange {
         TaskChange {
-            list: None
+            stepchanges: None
         }
     }
 
-    pub fn from(list: Option<Vec<ModuleBlockChange>>) -> TaskChange {
+    pub fn from(stepchanges: Option<Vec<ModuleBlockChange>>) -> TaskChange {
         TaskChange {
-            list
+            stepchanges
+        }
+    }
+
+    pub fn apply_taskchange(&self, hosthandler: &mut HostHandler) -> TaskResult {
+        match self.stepchanges.clone() {
+            None => {
+                return TaskResult::none();
+            }
+            Some(moduleblockchangelist) => {
+                let mut stepresults: Vec<ModuleBlockResult> = Vec::new();
+
+                for moduleblockchange in moduleblockchangelist.iter() {
+                    let moduleblockresultlist = moduleblockchange.apply_moduleblockchange(hosthandler);
+                    stepresults.push(moduleblockresultlist);
+                }
+
+                return TaskResult::from(Some(stepresults));
+            }
         }
     }
 }
 
 #[derive(Clone)]
 pub struct ChangeList {
-    pub correlationid: String,
-    pub list: Option<Vec<TaskChange>>,
-    hosthandler: HostHandler
+    pub taskchanges: Option<Vec<TaskChange>>,
+    hosthandler: HostHandler,
 }
 
 impl ChangeList {
-    pub fn new(correlationid: String) -> ChangeList {
+    pub fn new() -> ChangeList {
         ChangeList {
-            correlationid,
-            list: Some(Vec::new()),
-            hosthandler: HostHandler::new()
+            taskchanges: Some(Vec::new()),
+            hosthandler: HostHandler::new(),
         }
     }
 
-    pub fn from(correlationid: String, list: Option<Vec<TaskChange>>, hosthandler: HostHandler) -> ChangeList {
+    pub fn from(taskchanges: Option<Vec<TaskChange>>, hosthandler: HostHandler) -> ChangeList {
         ChangeList {
-            correlationid,
-            list,
-            hosthandler
+            taskchanges,
+            hosthandler,
         }
     }
 
-    pub fn apply_changelist(&self, hosthandler: &mut HostHandler) -> TaskListResult {
+    pub fn apply_changelist(&mut self, hosthandler: &mut HostHandler) -> TaskListResult {
 
-        match &self.list {
-            None => { TaskListResult::none(self.correlationid.clone(), hosthandler.hostaddress.clone())}
+        match &self.taskchanges {
+            None => { return TaskListResult::none(); }
             Some(taskchangelist) => {
 
-                let mut tasklistresult = TaskListResult::new(
-                    self.correlationid.clone(),
-                    hosthandler.hostaddress.clone(),
-                );
+                let mut tasklistresult = TaskListResult::new();
 
-                for taskchange in taskchangelist {
-
-                    match &taskchange.list {
-                        None => {
-                            tasklistresult.results.push(TaskResult { list: None });
-                        }
-                        Some(taskchangecontent) => {
-                            let mut list: Vec<ModuleBlockResult> = Vec::new();
-        
-                            for moduleblockchange in taskchangecontent {
-                                let moduleblockresult = moduleblockchange.apply_moduleblockchange(hosthandler);
-                                list.extend(moduleblockresult);
-                            }
-                
-                            tasklistresult.results.push(TaskResult { list: Some(list) });
-                        }
-                    }
-
+                for taskchange in taskchangelist.iter() {
+                    tasklistresult.taskresults.push(
+                      taskchange.apply_taskchange(hosthandler)  
+                    );
                 }
         
-                tasklistresult
+                return tasklistresult;
             }
         }
     }

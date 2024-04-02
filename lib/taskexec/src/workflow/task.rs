@@ -6,35 +6,35 @@ use connection::prelude::*;
 
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Task {
+pub struct TaskBlock {
     pub name: Option<String>,
-    pub tasks: Vec<ModuleBlockExpectedState>,
+    pub steps: Vec<ModuleBlockExpectedState>,
 }
 
-impl Task {
-    pub fn new() -> Task {
-        Task {
+impl TaskBlock {
+    pub fn new() -> TaskBlock {
+        TaskBlock {
             name: None,
-            tasks: Vec::new(),
+            steps: Vec::new(),
         }
     }
 
-    pub fn from(name: Option<String>, tasks: Vec<ModuleBlockExpectedState>) -> Task {
-        Task {
+    pub fn from(name: Option<String>, steps: Vec<ModuleBlockExpectedState>) -> TaskBlock {
+        TaskBlock {
             name,
-            tasks,
-        }
+            steps
+        }   
     }
 
     pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> TaskChange {
         let mut list: Vec<ModuleBlockChange> = Vec::new();
 
-        for moduleblock in self.clone().tasks.into_iter() {
+        for moduleblock in self.clone().steps.into_iter() {
             let moduleblockchange = moduleblock.dry_run_moduleblock(hosthandler);
             list.push(moduleblockchange);
         }
 
-        if list.iter().all(|x| x.module.is_none()) {
+        if list.iter().all(|x| x.apicalls.is_none()) {
             TaskChange::from(None)
         } else {
             TaskChange::from(Some(list))
@@ -44,32 +44,32 @@ impl Task {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct TaskList {
-    pub list: Vec<Task>,
+    pub tasks: Vec<TaskBlock>,
 }
 
 impl TaskList {
     pub fn new() -> TaskList {
         TaskList {
-            list: Vec::<Task>::new(),
+            tasks: Vec::<TaskBlock>::new(),
         }
     }
-    pub fn from(list: Vec<Task>) -> TaskList {
+    pub fn from(tasks: Vec<TaskBlock>) -> TaskList {
         TaskList {
-            list
+            tasks
         }
     }
     pub fn dry_run_tasklist(&self, correlationid: String, hosthandler: &mut HostHandler) -> ChangeList {
         let mut list: Vec<TaskChange> = Vec::new();
 
-        for task in self.list.clone().into_iter() {
-            let taskchange = task.dry_run_task(hosthandler);
+        for taskcontent in self.tasks.clone().iter() {
+            let taskchange = taskcontent.dry_run_task(hosthandler);
             list.push(taskchange);
         }
 
-        if list.iter().all(|x| x.list.is_none()) {
-            ChangeList::from(correlationid, None, hosthandler.clone())
+        if list.iter().all(|x| x.stepchanges.is_none()) {
+            ChangeList::from(None, hosthandler.clone())
         } else {
-            ChangeList::from(correlationid, Some(list), hosthandler.clone())
+            ChangeList::from(Some(list), hosthandler.clone())
         }
     }
 }

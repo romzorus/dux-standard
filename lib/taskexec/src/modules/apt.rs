@@ -2,8 +2,8 @@
 
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
-use crate::workflow::result::{ModuleBlockResult, ModuleBlockStatus};
-use crate::modules::ModuleBlockAction;
+use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -22,7 +22,7 @@ impl AptBlockExpectedState {
             return ModuleBlockChange::none();
         }
 
-        let mut changes: Vec<ModuleBlockAction> = Vec::new();
+        let mut changes: Vec<ModuleApiCall> = Vec::new();
 
         match &self.state {
             None => {}
@@ -35,8 +35,8 @@ impl AptBlockExpectedState {
                         if ! is_package_installed(hosthandler, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
                             changes.push(
-                                ModuleBlockAction::Apt(
-                                    AptBlockAction::from("install", Some(self.package.clone().unwrap()))
+                                ModuleApiCall::Apt(
+                                    AptApiCall::from("install", Some(self.package.clone().unwrap()))
                                 )
                             );
                         }
@@ -48,8 +48,8 @@ impl AptBlockExpectedState {
                         if is_package_installed(hosthandler, self.package.clone().unwrap()) {
                             // Package is present and needs to be removed
                             changes.push(
-                                ModuleBlockAction::Apt(
-                                    AptBlockAction::from("remove", Some(self.package.clone().unwrap()))
+                                ModuleApiCall::Apt(
+                                    AptApiCall::from("remove", Some(self.package.clone().unwrap()))
                                 )
                             );
                         }
@@ -64,8 +64,8 @@ impl AptBlockExpectedState {
             Some(value) => {
                 if value {
                     changes.push(
-                        ModuleBlockAction::Apt(
-                            AptBlockAction::from("upgrade", None)
+                        ModuleApiCall::Apt(
+                            AptApiCall::from("upgrade", None)
                         )
                     );
                 }
@@ -77,24 +77,22 @@ impl AptBlockExpectedState {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct AptBlockAction {
+pub struct AptApiCall {
     action: String,
     package: Option<String>,
 }
 
-impl AptBlockAction {
+impl AptApiCall {
 
-    pub fn from(action: &str, package: Option<String>) -> AptBlockAction {
-        AptBlockAction {
+    pub fn from(action: &str, package: Option<String>) -> AptApiCall {
+        AptApiCall {
             action: action.to_string(),
             package
         }
     }
 
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
+    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
-
-        let mut result = ModuleBlockResult::new();
 
         match self.action.as_str() {
             "install" => {
@@ -102,19 +100,21 @@ impl AptBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeSuccessful(
+                        ApiCallStatus::ChangeSuccessful(
                             format!("{} install successful", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 } else {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeFailed(
+                        ApiCallStatus::ChangeFailed(
                             format!("{} install failed", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 }
             }
             "remove" => {
@@ -122,19 +122,21 @@ impl AptBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeSuccessful(
+                        ApiCallStatus::ChangeSuccessful(
                             format!("{} removal successful", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 } else {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeFailed(
+                        ApiCallStatus::ChangeFailed(
                             format!("{} removal failed", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 }
             }
             "upgrade" => {
@@ -142,25 +144,21 @@ impl AptBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                result = ModuleBlockResult::from(
-                    Some(cmd_result.exitcode),
-                    Some(cmd_result.stdout),
-                    ModuleBlockStatus::ChangeSuccessful(
-                        String::from("upgrade successful")
-                    ));
-                } else {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeFailed(
-                            String::from("upgrade failed")
-                        ));
+                        ApiCallStatus::ChangeSuccessful(String::from("APT upgrade successful"))
+                    );
+                } else {
+                    return ApiCallResult::from(
+                        Some(cmd_result.exitcode),
+                        Some(cmd_result.stdout),
+                        ApiCallStatus::ChangeFailed(String::from("APT upgrade failed"))
+                    );
                 }
             }
-            _ => {}
+            _ => { return ApiCallResult::none(); }
         }
-
-        return result;
     }
 }
 

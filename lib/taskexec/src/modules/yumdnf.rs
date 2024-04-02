@@ -2,8 +2,8 @@
 
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
-use crate::workflow::result::{ModuleBlockResult, ModuleBlockStatus};
-use crate::modules::ModuleBlockAction;
+use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -28,7 +28,7 @@ impl YumDnfBlockExpectedState {
             return ModuleBlockChange::none();
         }
 
-        let mut changes: Vec<ModuleBlockAction> = Vec::new();
+        let mut changes: Vec<ModuleApiCall> = Vec::new();
 
         match &self.state {
             None => {}
@@ -41,8 +41,8 @@ impl YumDnfBlockExpectedState {
                         if ! is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
                             changes.push(
-                                ModuleBlockAction::YumDnf(
-                                    YumDnfBlockAction::from("install", Some(self.package.clone().unwrap()))
+                                ModuleApiCall::YumDnf(
+                                    YumDnfApiCall::from("install", Some(self.package.clone().unwrap()))
                                 )
                             );
                         }
@@ -54,8 +54,8 @@ impl YumDnfBlockExpectedState {
                         if is_package_installed(hosthandler, tool, self.package.clone().unwrap()) {
                             // Package is present and needs to be removed
                             changes.push(
-                                ModuleBlockAction::YumDnf(
-                                    YumDnfBlockAction::from("remove", Some(self.package.clone().unwrap()))
+                                ModuleApiCall::YumDnf(
+                                    YumDnfApiCall::from("remove", Some(self.package.clone().unwrap()))
                                 )
                             );
                         }
@@ -70,8 +70,8 @@ impl YumDnfBlockExpectedState {
             Some(value) => {
                 if value {
                     changes.push(
-                        ModuleBlockAction::YumDnf(
-                            YumDnfBlockAction::from("upgrade", None)
+                        ModuleApiCall::YumDnf(
+                            YumDnfApiCall::from("upgrade", None)
                         )
                     );
                 }
@@ -83,21 +83,21 @@ impl YumDnfBlockExpectedState {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct YumDnfBlockAction {
+pub struct YumDnfApiCall {
     action: String,
     package: Option<String>,
 }
 
-impl YumDnfBlockAction {
+impl YumDnfApiCall {
 
-    pub fn from(action: &str, package: Option<String>) -> YumDnfBlockAction {
-        YumDnfBlockAction {
+    pub fn from(action: &str, package: Option<String>) -> YumDnfApiCall {
+        YumDnfApiCall {
             action: action.to_string(),
             package
         }
     }
 
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
+    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let mut tool = String::new();
@@ -108,10 +108,8 @@ impl YumDnfBlockAction {
             tool = String::from("yum");
         } else {
             // TODO : handle this case with an error
-            return ModuleBlockResult::none();
+            return ApiCallResult::none();
         }
-
-        let mut result = ModuleBlockResult::new();
 
         match self.action.as_str() {
             "install" => {
@@ -119,19 +117,21 @@ impl YumDnfBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeSuccessful(
+                        ApiCallStatus::ChangeSuccessful(
                             format!("{} install successful", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 } else {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeFailed(
+                        ApiCallStatus::ChangeFailed(
                             format!("{} install failed", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 }
             }
             "remove" => {
@@ -139,19 +139,21 @@ impl YumDnfBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeSuccessful(
+                        ApiCallStatus::ChangeSuccessful(
                             format!("{} removal successful", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 } else {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeFailed(
+                        ApiCallStatus::ChangeFailed(
                             format!("{} removal failed", self.package.clone().unwrap())
-                        ));
+                        )
+                    );
                 }
             }
             "upgrade" => {
@@ -159,25 +161,21 @@ impl YumDnfBlockAction {
                 let cmd_result = hosthandler.run_cmd(cmd).unwrap();
                 
                 if cmd_result.exitcode == 0 {
-                    result = ModuleBlockResult::from(
+                    return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ModuleBlockStatus::ChangeSuccessful(
-                            String::from("upgrade successful")
-                        ));
+                        ApiCallStatus::ChangeSuccessful(String::from("Yum/DNF upgrade successful"))
+                    );
                     } else {
-                        result = ModuleBlockResult::from(
+                        return ApiCallResult::from(
                             Some(cmd_result.exitcode),
                             Some(cmd_result.stdout),
-                            ModuleBlockStatus::ChangeFailed(
-                                String::from("upgrade failed")
-                            ));
+                            ApiCallStatus::ChangeFailed(String::from("Yum/DNF upgrade failed"))
+                        );
                     }
             }
-            _ => {}
+            _ => { return ApiCallResult::none(); }
         }
-
-        return result;
     }
 }
 

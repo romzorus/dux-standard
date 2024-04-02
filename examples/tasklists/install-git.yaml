@@ -1,0 +1,15 @@
+- name: Install git
+  steps:
+    - !apt
+      state: absent
+      package: git
+      upgrade: true
+
+    # - !yum
+    #   upgrade: true
+    #   state: present
+    #   package: git
+    
+    - !dnf
+      state: present
+      package: git

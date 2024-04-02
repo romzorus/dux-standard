@@ -60,8 +60,10 @@ fn main() {
             correlationid.get_new_value().unwrap(),
             RunningMode::Apply,
             host.clone(),
+            hosthandler,
             tasklist.clone(),
-            hosthandler
+            ChangeList::new(),
+            TaskListResult::new()
         ));
     }
 
@@ -71,11 +73,9 @@ fn main() {
     //  -> Run each Assignment
     for mut assignment in assignmentlist.into_iter() {
 
-        let execresult = assignment.dry_run().apply_changelist(&mut assignment.hosthandler);
+        assignment.dry_run();
+        assignment.apply();
         
-        results.push(execresult);
+        display_output(assignment);
     }
-    // results now contains all the output of the run, per host
-
-    display_output(results);
 }

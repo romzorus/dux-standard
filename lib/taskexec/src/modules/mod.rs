@@ -7,8 +7,6 @@ use crate::workflow::change::ModuleBlockChange;
 use crate::modules::blocks::*;
 use connection::prelude::*;
 
-use self::yumdnf::YumDnfBlockAction;
-
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all="lowercase")]
 pub enum ModuleBlockExpectedState {
@@ -32,8 +30,8 @@ impl ModuleBlockExpectedState {
 }
 
 #[derive(Debug, Clone)]
-pub enum ModuleBlockAction {
+pub enum ModuleApiCall {
     None,
-    Apt(AptBlockAction),
-    YumDnf(YumDnfBlockAction)
+    Apt(AptApiCall),
+    YumDnf(YumDnfApiCall)
 }

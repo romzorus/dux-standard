@@ -1,7 +1,7 @@
 [
     {
         "name": "1. System update",
-        "tasks": [
+        "steps": [
             {
                 "apt": {
                     "upgrade": true
@@ -11,7 +11,7 @@
     },
     {
         "name": "2. Prerequisites installation",
-        "tasks": [
+        "steps": [
             {
                 "apt": {
                     "state": "present",
@@ -28,7 +28,7 @@
     },
     {
         "name": "3. Core business tool installation",
-        "tasks": [
+        "steps": [
             {
                 "apt": {
                     "state": "present",

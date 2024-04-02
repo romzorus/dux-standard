@@ -8,8 +8,10 @@ pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
     pub host: String, // Will disappear soon, fully replaced by hosthandler
-    pub tasklist: TaskList,
     pub hosthandler: HostHandler,
+    pub tasklist: TaskList,
+    pub changelist: ChangeList,
+    pub tasklistresult: TaskListResult
 }
 
 impl Assignment {
@@ -18,8 +20,10 @@ impl Assignment {
             correlationid,
             runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: String::from(""),
+            hosthandler: HostHandler::new(),
             tasklist: TaskList::new(),
-            hosthandler: HostHandler::new()
+            changelist: ChangeList::new(),
+            tasklistresult: TaskListResult::new()
         }
     }
 
@@ -27,47 +31,56 @@ impl Assignment {
         correlationid: String,
         runningmode: RunningMode,
         host: String,
+        hosthandler: HostHandler,
         tasklist: TaskList,
-        hosthandler: HostHandler) -> Assignment {
-        Assignment {
-            correlationid,
-            runningmode,
-            host,
-            tasklist,
-            hosthandler
-        }
+        changelist: ChangeList,
+        tasklistresult: TaskListResult
+        ) -> Assignment {
+
+            Assignment {
+                correlationid,
+                runningmode,
+                host,
+                hosthandler,
+                tasklist,
+                changelist,
+                tasklistresult
+            }
     }
 
-    pub fn dry_run(&mut self) -> ChangeList {
+    pub fn dry_run(&mut self) {
 
-        // TODO : turn all this connection initialization into anAssignment's method
+        // TODO : turn all this connection initialization into an Assignment's method
         match &self.hosthandler.connectionmode {
             ConnectionMode::Unset => {} // TODO : return some error
             ConnectionMode::LocalHost => {} // Nothing to initialize if working on the localhost
             ConnectionMode::Ssh2 => {
                 match self.hosthandler.ssh2.authmode.clone() {
                     Ssh2AuthMode::Unset => {} // TODO : return some error, missing auth mode
-                    Ssh2AuthMode::UsernamePassword(_credentials) => {}
+                    Ssh2AuthMode::UsernamePassword(_credentials) => {} // TODO : handle connection with username/password
                     Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
                         self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
                         self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys((username.clone(), privatekeypath.to_path_buf())));
                     }
-                    Ssh2AuthMode::SshAgent(_agentname) => {}
+                    Ssh2AuthMode::SshAgent(_agentname) => {} // TODO : handle connection with agent
                 }
 
                 self.hosthandler.init().expect("Failed HostHandler initialization");
             }
         }
         
-        self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler)
-        
+        let changelist = self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler);
+
+        self.changelist = changelist;
     }
     
     // TODO : allow direct run with this method
-    pub fn apply(&self) -> TaskListResult {
+    pub fn apply(&mut self) {
         assert_eq!(self.runningmode, RunningMode::Apply);
-        TaskListResult::new(self.correlationid.clone(), self.hosthandler.hostaddress.clone()) // PLACEHOLDER
+        
+        let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
 
+        self.tasklistresult = tasklistresult;
     }
 }
 
