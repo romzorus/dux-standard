@@ -21,7 +21,7 @@ impl ModuleBlockExpectedState {
 
     pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
         match &self {
-            ModuleBlockExpectedState::None => { ModuleBlockChange::none() }
+            ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
             ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler) }
             ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler) }
             ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler) }
@@ -31,7 +31,6 @@ impl ModuleBlockExpectedState {
 
 #[derive(Debug, Clone)]
 pub enum ModuleApiCall {
-    None,
     Apt(AptApiCall),
     YumDnf(YumDnfApiCall)
 }

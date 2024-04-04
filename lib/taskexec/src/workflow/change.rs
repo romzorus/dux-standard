@@ -1,96 +1,78 @@
 // This part is used to generate a ChangeList based on an Assignment.
 
-use crate::workflow::result::{TaskResult, TaskListResult};
-use crate::workflow::result::ModuleBlockResult;
+use crate::workflow::result::{ModuleBlockResult, TaskResult, TaskListResult, ApiCallResult};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
-use super::result::ApiCallResult;
-
-
 #[derive(Debug, Clone)]
-pub struct ModuleBlockChange {
-    pub apicalls: Option<Vec<ModuleApiCall>>
+pub enum ModuleBlockChange {
+    AlreadyMatched(String),
+    FailedToEvaluate(String), // The module can't work on this host (trying to use yum/dnf on Debian for example)
+    ModuleApiCalls(Vec<ModuleApiCall>)
 }
 
 impl ModuleBlockChange {
-    pub fn new() -> ModuleBlockChange {
-        ModuleBlockChange {
-            apicalls: Some(Vec::new())
-        }
+
+    pub fn matched(message: &str) -> ModuleBlockChange {
+        ModuleBlockChange::AlreadyMatched(message.to_string())
     }
 
-    pub fn none() -> ModuleBlockChange {
-        ModuleBlockChange {
-            apicalls: None
-        }
+    pub fn failed_to_evaluate(message: &str) -> ModuleBlockChange {
+        ModuleBlockChange::FailedToEvaluate(message.to_string())
     }
 
-    pub fn from(apicalls: Option<Vec<ModuleApiCall>>) -> ModuleBlockChange {
-        ModuleBlockChange {
-            apicalls
-        }
+    pub fn changes(changes: Vec<ModuleApiCall>) -> ModuleBlockChange {
+        ModuleBlockChange::ModuleApiCalls(changes)
     }
 
     pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
-        match self.apicalls.clone() {
-            Some(moduleapicalllist) => {
+
+        match self {
+            ModuleBlockChange::AlreadyMatched(message) => { ModuleBlockResult::none() }
+            ModuleBlockChange::FailedToEvaluate(message) => { ModuleBlockResult::none() }
+            ModuleBlockChange::ModuleApiCalls(changeslist) => {
                 let mut results: Vec<ApiCallResult> = Vec::new();
-                for moduleapicall in moduleapicalllist {
-                    let apicallresult = match moduleapicall {
-                        ModuleApiCall::None => { ApiCallResult::none() }
+                for change in changeslist {
+                    let apicallresult = match change {
                         ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
                     };
                     results.push(apicallresult);
                 }
-                return ModuleBlockResult::from(Some(results));
+                return ModuleBlockResult::from(results);
             }
-            None => { ModuleBlockResult::none() }
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct TaskChange {
-    pub stepchanges: Option<Vec<ModuleBlockChange>>
+    pub stepchanges: Vec<ModuleBlockChange>
 }
 
 impl TaskChange {
     pub fn new() -> TaskChange {
         TaskChange {
-            stepchanges: Some(Vec::new())
+            stepchanges: Vec::new()
         }
     }
 
-    pub fn none() -> TaskChange {
-        TaskChange {
-            stepchanges: None
-        }
-    }
-
-    pub fn from(stepchanges: Option<Vec<ModuleBlockChange>>) -> TaskChange {
+    pub fn from(stepchanges: Vec<ModuleBlockChange>) -> TaskChange {
         TaskChange {
             stepchanges
         }
     }
 
     pub fn apply_taskchange(&self, hosthandler: &mut HostHandler) -> TaskResult {
-        match self.stepchanges.clone() {
-            None => {
-                return TaskResult::none();
-            }
-            Some(moduleblockchangelist) => {
-                let mut stepresults: Vec<ModuleBlockResult> = Vec::new();
 
-                for moduleblockchange in moduleblockchangelist.iter() {
-                    let moduleblockresultlist = moduleblockchange.apply_moduleblockchange(hosthandler);
-                    stepresults.push(moduleblockresultlist);
-                }
+        let mut stepresults: Vec<ModuleBlockResult> = Vec::new();
 
-                return TaskResult::from(Some(stepresults));
-            }
+        for moduleblockchange in self.stepchanges.iter() {
+            let moduleblockresultlist = moduleblockchange.apply_moduleblockchange(hosthandler);
+            stepresults.push(moduleblockresultlist);
         }
+
+        return TaskResult::from(Some(stepresults));
     }
 }
 

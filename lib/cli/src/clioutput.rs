@@ -1,51 +1,35 @@
-use taskexec::workflow::result::TaskListResult;
+use taskexec::{prelude::*, workflow::assignment};
 
-pub fn display_output(allresults: Vec<TaskListResult>) {
+pub fn display_output(assignment: Assignment) {
 
-    for tasklistresult in allresults {
-        println!("###### {} ######", tasklistresult.host);
-
-        for taskresult in tasklistresult.results {
-            // TODO :Get the name of the Task in TaskResult so it can be displayed here
-
-            match taskresult.list {
-                None => { println!("-> No result for this Task") }
-                Some(moduleblockresultlist) => {
-
-                    for moduleblockresult in moduleblockresultlist {
-                        // TODO : Get the name of the module so it can be displayed here
-                        match moduleblockresult.exitcode {
-                            None => { println!("No exitcode : something went wrong"); }
-                            Some(exitcode) => {
-                                if exitcode == 0 {
-                                    println!("Success");
-                                } else {
-                                    println!("Failure : exitcode = {}", moduleblockresult.exitcode.unwrap());
-                                }
-                            }
-                        }
-
-                    }
-
-                }
+    for (taskblockindex, taskblock) in assignment.tasklist.tasks.iter().enumerate() {
+        for (stepindex, step) in taskblock.steps.iter().enumerate() {
+            println!("############ {} ############", assignment.host);
+            for changeresult in assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults.iter() {
+                println!("{} |||| {:?} |||| {:?} |||| {:?}",
+                    taskblock.name.clone().unwrap_or(String::from("no name for TaskBlock")),
+                    step,
+                    assignment.changelist.taskchanges.clone().unwrap()[taskblockindex].stepchanges.clone()[stepindex],
+                    changeresult.status
+                );
             }
-
         }
     }
-
-    // println!("**** Host : {} *****", execresult.host);
-    // for result in execresult.clone().results.into_iter() {
-    //     for blockresult in result.list.into_iter() {
-    //         for moduleblockresult in blockresult.into_iter() {
-    //             if let Some(content) = moduleblockresult.stdout {
-    //                 println!("{}", content.trim());
-    //             }
-    //         }
-    //     }
-    // }
-
 }
 
 pub fn display_results_detailed() {}
 
 pub fn display_results_summary() {}
+
+pub fn display_matrix() {
+    // for row in matrix {
+    //     println!("{} - {} - {} - {} - {:?} - {:?}",
+    //         row.taskid,
+    //         row.taskname,
+    //         row.blockid,
+    //         row.blockcontentshort,
+    //         row.changes,
+    //         row.results
+    //     );
+    // }
+}

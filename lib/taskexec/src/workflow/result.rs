@@ -35,23 +35,23 @@ impl ApiCallResult {
 
 #[derive(Debug, Clone)]
 pub struct ModuleBlockResult {
-    pub apicallresults: Option<Vec<ApiCallResult>>
+    pub apicallresults: Vec<ApiCallResult>
 }
 
 impl ModuleBlockResult {
     pub fn new() -> ModuleBlockResult {
         ModuleBlockResult {
-            apicallresults: Some(Vec::new())
+            apicallresults: Vec::new()
         }
     }
 
     pub fn none() -> ModuleBlockResult {
         ModuleBlockResult {
-            apicallresults: Some(Vec::from([ApiCallResult::none()]))
+            apicallresults: Vec::from([ApiCallResult::none()])
         }
     }
 
-    pub fn from(apicallresults: Option<Vec<ApiCallResult>>) -> ModuleBlockResult {
+    pub fn from(apicallresults: Vec<ApiCallResult>) -> ModuleBlockResult {
         ModuleBlockResult {
             apicallresults
         }
@@ -118,7 +118,6 @@ impl TaskListResult {
 pub enum ApiCallStatus {
     Unset,
     None,
-    AlreadyMatched,
     ChangeSuccessful(String),
     ChangeFailed(String)
 }

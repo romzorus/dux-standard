@@ -18,8 +18,7 @@ impl AptBlockExpectedState {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         if ! is_apt_working(hosthandler) {
-            // TODO : handle this case with an error
-            return ModuleBlockChange::none();
+            return ModuleBlockChange::failed_to_evaluate("APT not working on this host");
         }
 
         let mut changes: Vec<ModuleApiCall> = Vec::new();
@@ -72,7 +71,11 @@ impl AptBlockExpectedState {
             }
         }
 
-        return ModuleBlockChange::from(Some(changes));
+        if changes.is_empty() {
+            return ModuleBlockChange::matched("Expected state already matched");
+        } else {
+            return ModuleBlockChange::changes(changes);
+        }
     }
 }
 

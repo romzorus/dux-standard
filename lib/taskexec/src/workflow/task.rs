@@ -34,11 +34,13 @@ impl TaskBlock {
             list.push(moduleblockchange);
         }
 
-        if list.iter().all(|x| x.apicalls.is_none()) {
-            TaskChange::from(None)
-        } else {
-            TaskChange::from(Some(list))
-        }
+        return TaskChange::from(list)
+
+        // if list.iter().all(|x| x == ModuleBlockChange::AlreadyMatched(message)) {
+        //     TaskChange::from(None)
+        // } else {
+        //     TaskChange::from(Some(list))
+        // }
     }
 }
 
@@ -66,10 +68,12 @@ impl TaskList {
             list.push(taskchange);
         }
 
-        if list.iter().all(|x| x.stepchanges.is_none()) {
-            ChangeList::from(None, hosthandler.clone())
-        } else {
-            ChangeList::from(Some(list), hosthandler.clone())
-        }
+        return ChangeList::from(Some(list), hosthandler.clone());
+
+        // if list.iter().all(|x| x.stepchanges.is_none()) {
+        //     ChangeList::from(None, hosthandler.clone())
+        // } else {
+        //     ChangeList::from(Some(list), hosthandler.clone())
+        // }
     }
 }

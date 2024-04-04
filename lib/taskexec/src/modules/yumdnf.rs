@@ -24,8 +24,7 @@ impl YumDnfBlockExpectedState {
         } else if is_yum_working(hosthandler) {
             tool = String::from("yum");
         } else {
-            // TODO : handle this case with an error
-            return ModuleBlockChange::none();
+            return ModuleBlockChange::failed_to_evaluate("Neither YUM nor DNF work on this host");
         }
 
         let mut changes: Vec<ModuleApiCall> = Vec::new();
@@ -78,7 +77,11 @@ impl YumDnfBlockExpectedState {
             }
         }
 
-        return ModuleBlockChange::from(Some(changes));
+        if changes.is_empty() {
+            return ModuleBlockChange::matched("Expected state already matched");
+        } else {
+            return ModuleBlockChange::changes(changes);
+        }
     }
 }
 
@@ -157,8 +160,8 @@ impl YumDnfApiCall {
                 }
             }
             "upgrade" => {
-                let cmd = "{tool} update --refresh";
-                let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+                let cmd = format!("{tool} update --refresh");
+                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -167,6 +170,7 @@ impl YumDnfApiCall {
                         ApiCallStatus::ChangeSuccessful(String::from("Yum/DNF upgrade successful"))
                     );
                     } else {
+                        println!("------{}", cmd_result.stdout);
                         return ApiCallResult::from(
                             Some(cmd_result.exitcode),
                             Some(cmd_result.stdout),
