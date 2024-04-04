@@ -67,9 +67,6 @@ fn main() {
         ));
     }
 
-    // Run the Assignments and save the Results
-    //  -> Open a vector to put the results in
-    let mut results: Vec<TaskListResult> = Vec::new();
     //  -> Run each Assignment
     for mut assignment in assignmentlist.into_iter() {
 
