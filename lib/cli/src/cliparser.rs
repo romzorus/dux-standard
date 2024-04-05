@@ -27,6 +27,10 @@ pub struct CliArgs {
     /// Password to use on remote hosts
     #[arg(short, long)]
     pub password: Option<String>,
+
+    /// Number of threads (aka number of remote hosts handled in parallel)
+    #[arg(long, default_value_t = 4)]
+    pub threads: usize,
 }
 
 pub fn parse_cli_args() -> CliArgs {

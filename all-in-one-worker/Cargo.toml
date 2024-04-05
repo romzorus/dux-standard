@@ -12,3 +12,4 @@ cli = { path = "../lib/cli" }
 hostparser = { path = "../lib/hostparser" }
 connection = { path = "../lib/connection" }
 ssh2 = "0.9.4"
+rayon = "1.10.0"

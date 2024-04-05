@@ -1,9 +1,10 @@
 use cli::prelude::*;
 use connection::prelude::*;
 use hostparser::*;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::{Arc, Mutex}};
 use taskexec::prelude::*;
 use taskparser::prelude::*;
+use rayon::prelude::*;
 
 fn main() {
     // Parse the CLI arguments
@@ -66,13 +67,30 @@ fn main() {
             TaskListResult::new()
         ));
     }
+ 
+    let resultslist: Mutex<Vec<Assignment>> = Mutex::new(Vec::new());
 
-    //  -> Run each Assignment
-    for mut assignment in assignmentlist.into_iter() {
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(cliargs.threads)
+        .build()
+        .unwrap();
 
-        assignment.dry_run();
-        assignment.apply();
-        
+    pool.install(|| {
+        rayon::scope(|s| {
+            for mut assignment in assignmentlist.into_iter() {
+                let resultslist = &resultslist;
+                s.spawn(move |_| {
+                    assignment.dry_run();
+                    assignment.apply();
+                    resultslist.lock().unwrap().push(assignment);
+                });
+            }
+        });
+    });
+
+    // TODO : introduce a function to sort the output according to the order of the hosts in the HostList
+    for assignment in resultslist.lock().unwrap().clone().into_iter() {
         display_output(assignment);
     }
+
 }

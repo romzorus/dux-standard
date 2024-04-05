@@ -4,6 +4,7 @@ use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
 
+#[derive(Clone)]
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
@@ -84,7 +85,7 @@ impl Assignment {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum RunningMode {
     DryRun, // Only check what needs to be done to match the expected situation
     Apply   // Actually apply the changes required to match the expected situation
