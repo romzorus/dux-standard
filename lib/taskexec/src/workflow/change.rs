@@ -25,6 +25,25 @@ impl ModuleBlockChange {
         ModuleBlockChange::ModuleApiCalls(changes)
     }
 
+    pub fn display(&self) -> Vec<String> {
+
+        match self {
+            ModuleBlockChange::AlreadyMatched(message) => { return Vec::from([message.clone()]); }
+            ModuleBlockChange::FailedToEvaluate(message) => { return Vec::from([message.clone()]); }
+            ModuleBlockChange::ModuleApiCalls(changeslist) => {
+                let mut display_contents: Vec<String> = Vec::new();
+                for change in changeslist {
+                    let apicalldisplay = match change {
+                        ModuleApiCall::Apt(block) => { block.display() }
+                        ModuleApiCall::YumDnf(block) => { block.display() }
+                    };
+                    display_contents.push(apicalldisplay);
+                }
+                return display_contents;
+            }
+        }
+    }
+
     pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
 
         match self {

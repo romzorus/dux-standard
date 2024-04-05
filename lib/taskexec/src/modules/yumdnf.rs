@@ -93,6 +93,21 @@ pub struct YumDnfApiCall {
 
 impl YumDnfApiCall {
 
+    pub fn display(&self) -> String {
+        match self.action.as_str() {
+            "install" => {
+                return format!("Install - {}", self.package.clone().unwrap());
+            }
+            "remove" => {
+                return format!("Remove - {}", self.package.clone().unwrap());
+            }
+            "upgrade" => {
+                return String::from("Upgrade");
+            }
+            _ => { return String::from("Wrong YumDnfApiCall action"); }
+        }
+    }
+
     pub fn from(action: &str, package: Option<String>) -> YumDnfApiCall {
         YumDnfApiCall {
             action: action.to_string(),

@@ -87,6 +87,21 @@ pub struct AptApiCall {
 
 impl AptApiCall {
 
+    pub fn display(&self) -> String {
+        match self.action.as_str() {
+            "install" => {
+                return format!("Install - {}", self.package.clone().unwrap());
+            }
+            "remove" => {
+                return format!("Remove - {}", self.package.clone().unwrap());
+            }
+            "upgrade" => {
+                return String::from("Upgrade");
+            }
+            _ => { return String::from("Wrong AptApiCall action"); }
+        }
+    }
+
     pub fn from(action: &str, package: Option<String>) -> AptApiCall {
         AptApiCall {
             action: action.to_string(),
