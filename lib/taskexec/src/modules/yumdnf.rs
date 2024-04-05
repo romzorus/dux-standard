@@ -163,7 +163,7 @@ impl YumDnfApiCall {
                 }
             }
             "upgrade" => {
-                let cmd = format!("{} update --refresh", self.tool);
+                let cmd = format!("{} update -y --refresh", self.tool);
                 let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
