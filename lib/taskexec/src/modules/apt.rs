@@ -58,16 +58,13 @@ impl AptBlockExpectedState {
             }
         }
 
-        match self.upgrade {
-            None => {}
-            Some(value) => {
-                if value {
-                    changes.push(
-                        ModuleApiCall::Apt(
-                            AptApiCall::from("upgrade", None)
-                        )
-                    );
-                }
+        if let Some(value) = self.upgrade {
+            if value {
+                changes.push(
+                    ModuleApiCall::Apt(
+                        AptApiCall::from("upgrade", None)
+                    )
+                );
             }
         }
 
