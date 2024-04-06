@@ -31,6 +31,7 @@ impl ModuleBlockExpectedState {
 
 #[derive(Debug, Clone)]
 pub enum ModuleApiCall {
+    None(String),
     Apt(AptApiCall),
     YumDnf(YumDnfApiCall)
 }

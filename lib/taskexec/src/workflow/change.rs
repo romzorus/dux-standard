@@ -34,6 +34,7 @@ impl ModuleBlockChange {
                 let mut display_contents: Vec<String> = Vec::new();
                 for change in changeslist {
                     let apicalldisplay = match change {
+                        ModuleApiCall::None(message) => { message.clone() }
                         ModuleApiCall::Apt(block) => { block.display() }
                         ModuleApiCall::YumDnf(block) => { block.display() }
                     };
@@ -53,6 +54,7 @@ impl ModuleBlockChange {
                 let mut results: Vec<ApiCallResult> = Vec::new();
                 for change in changeslist {
                     let apicallresult = match change {
+                        ModuleApiCall::None(_) => { ApiCallResult::none() }
                         ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
                     };
