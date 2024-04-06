@@ -1,10 +1,9 @@
 use cli::prelude::*;
 use connection::prelude::*;
 use hostparser::*;
-use std::{path::PathBuf, sync::{Arc, Mutex}};
+use std::{path::PathBuf, sync::Mutex};
 use taskexec::prelude::*;
 use taskparser::prelude::*;
-use rayon::prelude::*;
 
 fn main() {
     // Parse the CLI arguments
@@ -21,7 +20,7 @@ fn main() {
     );
 
     // Build Assignments (an Assignment is basically a Host associated to a TaskList)
-    //  -> Initialization of CorrelationId
+    //  -> Initialization of CorrelationId (not really required for all-in-one mode)
     let mut correlationid = CorrelationIdGenerator::new();
     correlationid.init();
     //  -> Actual build of Assignments
