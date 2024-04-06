@@ -86,10 +86,14 @@ fn main() {
             }
         });
     });
-
-    // TODO : introduce a function to sort the output according to the order of the hosts in the HostList
-    for assignment in resultslist.lock().unwrap().clone().into_iter() {
-        display_output(assignment);
+    
+    // TODO : implement a better way to sort the output according to the order of the hosts in the HostList
+    // aka sort resultslist in HostList order so we simply have to go through resultslist after that
+    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+        for assignment in resultslist.lock().unwrap().clone().into_iter() {
+            if host.eq(&assignment.host) {
+                display_output(assignment);
+            }
+        }
     }
-
 }
