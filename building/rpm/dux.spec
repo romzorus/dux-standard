@@ -11,4 +11,4 @@ Packager:   romzorus <romzorus591@gmail.com>
 A scalable and cloud-friendly automation / orchestration tool (all-in-one version) written in Rust.
 
 %files
-/duxtool
+/usr/bin/duxtool
