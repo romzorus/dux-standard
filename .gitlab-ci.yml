@@ -1,20 +1,19 @@
-default:
- image: rust:slim-buster
-
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
 
 stages:
   - build
-  - test
 
-release-building:
+build-for-debian:
   stage: build
+  image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release --verbose
-
-testing:
-  stage: test
-  script:
-   - cargo test
+   - mkdir -p building/duxtool/usr/bin
+   - cp target/release/all-in-one-worker building/duxtool/usr/bin/duxtool
+   - chmod -R 755 building/duxtool
+   - dpkg-deb --build building/duxtool
+  artifacts:
+    paths:
+    - building/duxtool.deb
