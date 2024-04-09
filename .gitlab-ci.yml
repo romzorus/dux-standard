@@ -9,11 +9,24 @@ build-for-debian:
   stage: build
   image: romzorus/deb-rust-build:v1.0
   script:
-   - cargo build --release --verbose
-   - mkdir -p building/duxtool/usr/bin
-   - cp target/release/all-in-one-worker building/duxtool/usr/bin/duxtool
-   - chmod -R 755 building/duxtool
-   - dpkg-deb --build building/duxtool
+   - cargo build --release
+   - mkdir -p building/deb/duxtool/usr/bin
+   - cp target/release/all-in-one-worker building/deb/duxtool/usr/bin/duxtool
+   - chmod -R 755 building/deb/duxtool
+   - dpkg-deb --build building/deb/duxtool
   artifacts:
     paths:
-    - building/duxtool.deb
+    - building/deb/duxtool.deb
+
+build-for-fedora:
+  stage: build
+  image: romzorus/rpm-rust-build:v1.0
+  script:
+   - cargo build --release
+   - cp building/rpm/dux.spec ~/rpmbuild/SPECS
+   - mkdir ~/rpmbuild/BUILDROOT/duxtool-0.0.1-0.x86_64/
+   - cp target/release/all-in-one-worker ~/rpmbuild/BUILDROOT/duxtool-0.0.1-0.x86_64/duxtool
+   - rpmbuild -bb ~/rpmbuild/SPECS/dux.spec
+  artifacts:
+    paths:
+    - ~/rpmbuild/RPMS/x86_64/*rpm
