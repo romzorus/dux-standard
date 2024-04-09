@@ -4,6 +4,7 @@ workflow:
 
 stages:
   - build
+  - deploy
 
 build-for-debian:
   stage: build
@@ -31,3 +32,9 @@ build-for-fedora:
   artifacts:
     paths:
     - "*.rpm"
+
+upload-to-package-registry:
+  stage: deploy
+  script:
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/duxtool.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/0.0.1/duxtool.deb"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file duxtool-0.0.1-0.x86_64.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/0.0.1/duxtool-0.0.1-0.x86_64.rpm"'
