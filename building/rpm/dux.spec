@@ -12,7 +12,7 @@ A scalable and cloud-friendly automation / orchestration tool (all-in-one versio
 
 %install
 mkdir -p %{buildroot}/usr/bin
-cp -a duxtool %{buildroot}/usr/bin/
+cp duxtool %{buildroot}/usr/bin/
 
 %files
 /usr/bin/duxtool
