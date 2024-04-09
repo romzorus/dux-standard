@@ -10,5 +10,9 @@ Packager:   romzorus <romzorus591@gmail.com>
 %description
 A scalable and cloud-friendly automation / orchestration tool (all-in-one version) written in Rust.
 
+%install
+mkdir -p %{buildroot}/usr/bin
+cp -a duxtool %{buildroot}/usr/bin/
+
 %files
 /usr/bin/duxtool
