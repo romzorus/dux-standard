@@ -27,6 +27,7 @@ build-for-fedora:
    - mkdir ~/rpmbuild/BUILDROOT/duxtool-0.0.1-0.x86_64/
    - cp target/release/all-in-one-worker ~/rpmbuild/BUILDROOT/duxtool-0.0.1-0.x86_64/duxtool
    - rpmbuild -bb ~/rpmbuild/SPECS/dux.spec
+   - cp ~/rpmbuild/RPMS/x86_64/*rpm .
   artifacts:
     paths:
-    - ~/rpmbuild/RPMS/x86_64/*rpm
+    - "*.rpm"
