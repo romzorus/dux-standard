@@ -2,6 +2,9 @@ workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
+variables:
+  DUX_VERSION: "0.0.1"
+
 stages:
   - build
   - deploy
@@ -15,9 +18,10 @@ build-for-debian:
    - cp target/release/all-in-one-worker building/deb/duxtool/usr/bin/duxtool
    - chmod -R 755 building/deb/duxtool
    - dpkg-deb --build building/deb/duxtool
+   - mv building/deb/duxtool.deb building/deb/duxtool-$DUX_VERSION.deb
   artifacts:
     paths:
-    - building/deb/duxtool.deb
+    - building/deb/duxtool-$DUX_VERSION.deb
 
 build-for-fedora:
   stage: build
@@ -25,7 +29,7 @@ build-for-fedora:
   script:
    - cargo build --release
    - cp building/rpm/dux.spec ~/rpmbuild/SPECS
-   - mkdir ~/rpmbuild/BUILDROOT/duxtool-0.0.1-0.x86_64/
+   - mkdir ~/rpmbuild/BUILDROOT/duxtool-$DUX_VERSION-0.x86_64/
    - cp target/release/all-in-one-worker ~/rpmbuild/BUILD/duxtool
    - rpmbuild -bb ~/rpmbuild/SPECS/dux.spec
    - cp ~/rpmbuild/RPMS/x86_64/*rpm .
@@ -36,5 +40,5 @@ build-for-fedora:
 upload-to-package-registry:
   stage: deploy
   script:
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/duxtool.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/0.0.1/duxtool.deb"'
-    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file duxtool-0.0.1-0.x86_64.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/0.0.1/duxtool-0.0.1-0.x86_64.rpm"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/duxtool-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION.deb"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file duxtool-$DUX_VERSION-0.x86_64.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION-0.x86_64.rpm"'
