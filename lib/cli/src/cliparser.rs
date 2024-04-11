@@ -2,6 +2,7 @@ use clap::Parser;
 
 /// Run Dux as a all-in-one tool
 #[derive(Parser, Debug)]
+#[command(arg_required_else_help(true))]
 #[command(version, about, long_about = None)]
 pub struct CliArgs {
     /// Path to configuration file
