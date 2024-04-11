@@ -1,5 +1,6 @@
 pub mod blocks;
 pub mod apt;
+pub mod ping;
 pub mod yumdnf;
 
 use serde::Deserialize;
@@ -13,6 +14,7 @@ pub enum ModuleBlockExpectedState {
     None, // Used for new() methods, initializations and errors
     Apt(AptBlockExpectedState),
     Dnf(YumDnfBlockExpectedState),
+    Ping(PingBlockExpectedState),
     Yum(YumDnfBlockExpectedState)
 }
 
@@ -24,6 +26,7 @@ impl ModuleBlockExpectedState {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
             ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler) }
             ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlockExpectedState::Ping(block) => { block.dry_run_block(hosthandler) }
             ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler) }
         }
     }
@@ -33,5 +36,6 @@ impl ModuleBlockExpectedState {
 pub enum ModuleApiCall {
     None(String),
     Apt(AptApiCall),
+    Ping(PingApiCall),
     YumDnf(YumDnfApiCall)
 }

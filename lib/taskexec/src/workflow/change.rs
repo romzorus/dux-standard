@@ -36,6 +36,7 @@ impl ModuleBlockChange {
                     let apicalldisplay = match change {
                         ModuleApiCall::None(message) => { message.clone() }
                         ModuleApiCall::Apt(block) => { block.display() }
+                        ModuleApiCall::Ping(block) => { block.display() }
                         ModuleApiCall::YumDnf(block) => { block.display() }
                     };
                     display_contents.push(apicalldisplay);
@@ -56,6 +57,7 @@ impl ModuleBlockChange {
                     let apicallresult = match change {
                         ModuleApiCall::None(_) => { ApiCallResult::none() }
                         ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
+                        ModuleApiCall::Ping(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
                     };
                     results.push(apicallresult);
