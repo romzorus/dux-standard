@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
 
 variables:
   DUX_VERSION: "0.0.1"
@@ -42,3 +42,5 @@ upload-to-package-registry:
   script:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/duxtool-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION.deb"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file duxtool-$DUX_VERSION-0.x86_64.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION-0.x86_64.rpm"'
+  rules:
+   - if: $CI_COMMIT_BRANCH == "main"
