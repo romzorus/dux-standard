@@ -44,32 +44,41 @@ impl Ssh2HostHandler {
     }
 
     pub fn init(&mut self) -> Result<(), Error> {
-        match &self.authmode {
-            Ssh2AuthMode::Unset => { return Err(Error::MissingInitialization); }
-            Ssh2AuthMode::UsernamePassword(credentials) => {
-                let tcp = TcpStream::connect(format!("{}:22", self.hostaddress)).unwrap(); // TODO : add SSH custom port handling
-                self.sshsession.set_tcp_stream(tcp);
-                self.sshsession.handshake().unwrap();
-                self.sshsession.userauth_password(&credentials.username, &credentials.password).unwrap();
-                if self.sshsession.authenticated() {
-                    return Ok(());
-                } else {
-                    return Err(Error::FailedInitialization)
-                }
-            }
-            Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
-                let tcp = TcpStream::connect(format!("{}:22", self.hostaddress)).unwrap(); // TODO : add SSH custom port handling
-                self.sshsession.set_tcp_stream(tcp);
-                self.sshsession.handshake().unwrap();
-                self.sshsession.userauth_pubkey_file(username.as_str(), None, &privatekeypath, None).unwrap(); // TODO : add pubkey and passphrase support
 
-                if self.sshsession.authenticated() {
-                    return Ok(());
-                } else {
-                    return Err(Error::FailedInitialization)
+        if self.authmode == Ssh2AuthMode::Unset {
+            return Err(Error::MissingInitialization);
+        } else {
+            // TODO : add SSH custom port handling
+            match TcpStream::connect(format!("{}:22", self.hostaddress)) {
+                Ok(tcp) => {
+                    self.sshsession.set_tcp_stream(tcp);
+                    self.sshsession.handshake().unwrap();
+
+                    match &self.authmode {
+                        Ssh2AuthMode::UsernamePassword(credentials) => {
+                            self.sshsession.userauth_password(&credentials.username, &credentials.password).unwrap();
+                            if self.sshsession.authenticated() {
+                                return Ok(());
+                            } else {
+                                return Err(Error::FailedInitialization(String::from("PLACEHOLDER")))
+                            }
+                        }
+                        Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
+                            self.sshsession.userauth_pubkey_file(username.as_str(), None, &privatekeypath, None).unwrap(); // TODO : add pubkey and passphrase support
+                            if self.sshsession.authenticated() {
+                                return Ok(());
+                            } else {
+                                return Err(Error::FailedInitialization(String::from("PLACEHOLDER")))
+                            }
+                        }
+                        Ssh2AuthMode::SshAgent(_agent) => { return Ok(()); } // TODO
+                        _ => { return Err(Error::FailedInitialization(String::from("Other error")))}
+                    }
+                }
+                Err(e) => {
+                    return Err(Error::FailedTcpBinding(format!("{:?}", e)));
                 }
             }
-            Ssh2AuthMode::SshAgent(_agent) => { return Ok(()); } // TODO
         }
     }
     
