@@ -63,7 +63,8 @@ fn main() {
             hosthandler,
             tasklist.clone(),
             ChangeList::new(),
-            TaskListResult::new()
+            TaskListResult::new(),
+            AssignmentFinalStatus::Unset
         ));
     }
  
@@ -79,7 +80,7 @@ fn main() {
             for mut assignment in assignmentlist.into_iter() {
                 let resultslist = &resultslist;
                 s.spawn(move |_| {
-                    assignment.dry_run();
+                    let _ = assignment.dry_run();
                     assignment.apply();
                     resultslist.lock().unwrap().push(assignment);
                 });
