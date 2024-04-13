@@ -3,6 +3,9 @@ use crate::workflow::change::ChangeList;
 use crate::workflow::task::TaskList;
 use crate::workflow::result::TaskListResult;
 use connection::prelude::*;
+use errors::Error;
+
+use super::change::ModuleBlockChange;
 
 #[derive(Clone)]
 pub struct Assignment {
@@ -12,7 +15,8 @@ pub struct Assignment {
     pub hosthandler: HostHandler,
     pub tasklist: TaskList,
     pub changelist: ChangeList,
-    pub tasklistresult: TaskListResult
+    pub tasklistresult: TaskListResult,
+    pub finalstatus: AssignmentFinalStatus
 }
 
 impl Assignment {
@@ -24,7 +28,8 @@ impl Assignment {
             hosthandler: HostHandler::new(),
             tasklist: TaskList::new(),
             changelist: ChangeList::new(),
-            tasklistresult: TaskListResult::new()
+            tasklistresult: TaskListResult::new(),
+            finalstatus: AssignmentFinalStatus::Unset
         }
     }
 
@@ -35,7 +40,8 @@ impl Assignment {
         hosthandler: HostHandler,
         tasklist: TaskList,
         changelist: ChangeList,
-        tasklistresult: TaskListResult
+        tasklistresult: TaskListResult,
+        finalstatus: AssignmentFinalStatus
         ) -> Assignment {
 
             Assignment {
@@ -45,11 +51,12 @@ impl Assignment {
                 hosthandler,
                 tasklist,
                 changelist,
-                tasklistresult
+                tasklistresult,
+                finalstatus
             }
     }
 
-    pub fn dry_run(&mut self) {
+    pub fn dry_run(&mut self) -> Result<(), Error> {
 
         // TODO : turn all this connection initialization into an Assignment's method
         match &self.hosthandler.connectionmode {
@@ -66,22 +73,59 @@ impl Assignment {
                     Ssh2AuthMode::SshAgent(_agentname) => {} // TODO : handle connection with agent
                 }
 
-                self.hosthandler.init().expect("Failed HostHandler initialization");
+                match self.hosthandler.init() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        self.changelist.taskchanges = None;
+                        self.finalstatus = AssignmentFinalStatus::Failed(format!("{:?}", e));
+                        return Err(Error::FailedInitialization(format!("{:?}", e)));
+                    }
+                }
+
             }
         }
         
         let changelist = self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler);
-
+        match &changelist.taskchanges {
+            Some(taskchangelist) => {
+                let mut finalstatus = AssignmentFinalStatus::AlreadyMatched;
+                for taskchange in taskchangelist {
+                    for step in taskchange.stepchanges.clone() {
+                        match step {
+                            ModuleBlockChange::AlreadyMatched(_) => {}
+                            ModuleBlockChange::FailedToEvaluate(e) => {
+                                finalstatus = AssignmentFinalStatus::Failed(e);
+                                break;
+                            }
+                            ModuleBlockChange::ModuleApiCalls(_) => {
+                                finalstatus = AssignmentFinalStatus::Unset;
+                                break;
+                            }
+                        }
+                    }
+                }
+                self.finalstatus = finalstatus;
+            }
+            None => {}
+        }
         self.changelist = changelist;
+
+        return Ok(());
     }
     
     // TODO : allow direct run with this method
     pub fn apply(&mut self) {
         assert_eq!(self.runningmode, RunningMode::Apply);
         
-        let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
-
-        self.tasklistresult = tasklistresult;
+        match self.finalstatus {
+            AssignmentFinalStatus::Failed(_) => {}
+            AssignmentFinalStatus::AlreadyMatched => {}
+            _ => {
+                let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
+                self.tasklistresult = tasklistresult;
+                self.finalstatus = AssignmentFinalStatus::Changed;
+            }
+        }
     }
 }
 
@@ -89,4 +133,12 @@ impl Assignment {
 pub enum RunningMode {
     DryRun, // Only check what needs to be done to match the expected situation
     Apply   // Actually apply the changes required to match the expected situation
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum AssignmentFinalStatus {
+    Unset,
+    Failed(String),
+    Changed,
+    AlreadyMatched
 }
