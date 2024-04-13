@@ -5,6 +5,43 @@ Build a scalable automation / orchestration tool (something that runs a task on 
 
 A worker node can be either a physical/virtual machine or a container.
 
+# Usage
+
+## All-in-one dux tool
+
+`dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key>`
+
+with `tasklist.yaml`
+~~~
+- name: Install git
+  steps:
+    - !apt
+      state: present
+      package: git
+    
+    - !dnf
+      state: present
+      package: git
+~~~
+and `hostlist.yaml`
+~~~
+hosts:
+  - 172.17.0.2
+  - 172.17.0.3
+  - 172.17.0.4
+  - 172.17.0.5
+  - 172.17.0.6
+~~~
+
+# Modules available
+*(alphabetized)*
+| Module | Description |
+| ---      | ---      |
+| `apt`   | Manage packages on Debian-like distributions |
+| `yum` | Manage packages on Fedora-like distributions (no difference with `yum`) |
+| `ping`   | Test SSH connectivity with remote host |
+| `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
+
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
