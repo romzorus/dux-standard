@@ -31,12 +31,7 @@ impl AptBlockExpectedState {
                         assert!(hosthandler.ssh2.sshsession.authenticated());
                         
                         // Check is package is already installed or needs to be
-                        if is_package_installed(hosthandler, self.package.clone().unwrap()) {
-                            changes.push( ModuleApiCall::None(
-                                format!("{} already present", self.package.clone().unwrap())
-                                )
-                            );
-                        } else {
+                        if ! is_package_installed(hosthandler, self.package.clone().unwrap()) {
                             // Package is absent and needs to be installed
                             changes.push(
                                 ModuleApiCall::Apt(
@@ -54,11 +49,6 @@ impl AptBlockExpectedState {
                             changes.push(
                                 ModuleApiCall::Apt(
                                     AptApiCall::from("remove", Some(self.package.clone().unwrap()))
-                                )
-                            );
-                        } else {
-                            changes.push( ModuleApiCall::None(
-                                format!("{} already absent", self.package.clone().unwrap())
                                 )
                             );
                         }
@@ -79,7 +69,7 @@ impl AptBlockExpectedState {
         }
 
         if changes.is_empty() {
-            return ModuleBlockChange::matched("Expected state already matched");
+            return ModuleBlockChange::matched("Package already in expected state");
         } else {
             return ModuleBlockChange::changes(changes);
         }
