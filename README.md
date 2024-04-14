@@ -2,6 +2,7 @@
 <div align="center">
 ![alt text](img/dux.png "Dux in the jungle"){width=170px}
 </div>
+
 # Our goal
 Build a scalable automation / orchestration tool (something that runs a task on a remote host basically) ready to handle a massive amount of remote hosts in parallel. To increase the number of remote hosts you can handle in parallel, just increase the number of worker nodes or their capacity.
 
