@@ -1,5 +1,5 @@
 # Dux : a scalable and cloud-friendly automation tool
-
+![alt text](img/dux.png "Dux in the jungle"){width=50%}
 # Our goal
 Build a scalable automation / orchestration tool (something that runs a task on a remote host basically) ready to handle a massive amount of remote hosts in parallel. To increase the number of remote hosts you can handle in parallel, just increase the number of worker nodes or their capacity.
 
@@ -38,7 +38,7 @@ hosts:
 | Module | Description |
 | ---      | ---      |
 | `apt`   | Manage packages on Debian-like distributions |
-| `yum` | Manage packages on Fedora-like distributions (no difference with `yum`) |
+| `dnf` | Manage packages on Fedora-like distributions (no difference with `yum`) |
 | `ping`   | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
 
