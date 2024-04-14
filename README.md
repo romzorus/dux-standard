@@ -1,6 +1,6 @@
 # Dux : a scalable and cloud-friendly automation tool
 <div align="center">
-![alt text](img/dux.png "Dux in the jungle"){width=170px}
+<img src="img/dux.png " width="25%">
 </div>
 
 # Our goal
