@@ -4,11 +4,18 @@ use crate::modules::ModuleBlockExpectedState;
 use crate::workflow::change::{ChangeList, ModuleBlockChange, TaskChange};
 use connection::prelude::*;
 
-
+// TODO : ModuleBlockExpectedState need to be wrapped in a 'Step' type
+// 1 Step =
+//      - 1 ModuleBlockExpectedState
+//      - parameters such as :
+//          - name
+//          - privilege escalation for the ModuleBlock (with_sudo, run_as...etc)
+//          - pre/post logic
 #[derive(Debug, Clone, Deserialize)]
 pub struct TaskBlock {
     pub name: Option<String>,
     pub steps: Vec<ModuleBlockExpectedState>,
+    pub with_sudo: Option<bool>
 }
 
 impl TaskBlock {
@@ -16,13 +23,15 @@ impl TaskBlock {
         TaskBlock {
             name: None,
             steps: Vec::new(),
+            with_sudo: None
         }
     }
 
-    pub fn from(name: Option<String>, steps: Vec<ModuleBlockExpectedState>) -> TaskBlock {
+    pub fn from(name: Option<String>, steps: Vec<ModuleBlockExpectedState>, with_sudo: Option<bool>) -> TaskBlock {
         TaskBlock {
             name,
-            steps
+            steps,
+            with_sudo
         }   
     }
 
@@ -35,12 +44,6 @@ impl TaskBlock {
         }
 
         return TaskChange::from(list)
-
-        // if list.iter().all(|x| x == ModuleBlockChange::AlreadyMatched(message)) {
-        //     TaskChange::from(None)
-        // } else {
-        //     TaskChange::from(Some(list))
-        // }
     }
 }
 
