@@ -177,6 +177,8 @@ impl AptApiCall {
     }
 }
 
+// TODO : add more granular error messages
+// -> apt not working but present ? -> permission issue ? (return code = 100)
 fn is_apt_working(hosthandler: &mut HostHandler) -> bool {
 
     let cmd = "apt-get check";
