@@ -77,10 +77,6 @@ pub fn display_output(assignment: Assignment) {
         }
     }
 
-    
-    
-    /////////////////////////////////////////////////////////////////////////////
-
     table_content.push_str("\n|-");
     println!("{}", skin.term_text(&table_content));
 }
@@ -99,8 +95,12 @@ fn output_nice_result(status: &ApiCallStatus) -> String {
 }
 
 // TODO : improve this / replace with step name when it will be implemented
-fn output_nice_step(step: &ModuleBlockExpectedState) -> String {
-    return format!("`{:?}`", step);
+fn output_nice_step(step: &Step) -> String {
+    match step.name.clone() {
+        None => { return format!("`{:?}`", step); }
+        Some(content) => { return content; }
+    }
+    
 }
 
 fn output_nice_finalstatus(finalstatus: &AssignmentFinalStatus) -> String {
