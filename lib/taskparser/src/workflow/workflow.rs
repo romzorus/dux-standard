@@ -6,10 +6,25 @@ use crate::fileformats::yaml::yaml_tasklist_parser;
 pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
 
     match yaml_tasklist_parser(&tasklistcontent) {
-        Ok(parsed_content) => { return parsed_content; }
+        Ok(mut parsed_content) => {
+
+            for (taskindex, taskcontent) in parsed_content.clone().tasks.iter().enumerate() {
+                for (stepindex, _stepcontent) in taskcontent.steps.iter().enumerate() {
+                    let _ = parsed_content.tasks[taskindex].steps[stepindex].parsemodule(); // TODO : error handling required here
+                }
+            }
+            return parsed_content;
+        }
         Err(_e) => {
             match json_tasklist_parser(&tasklistcontent) {
-                Ok(parsed_content) => { return parsed_content; }
+                Ok(mut parsed_content) => {
+                    for (taskindex, taskcontent) in parsed_content.clone().tasks.iter().enumerate() {
+                        for (stepindex, _stepcontent) in taskcontent.steps.iter().enumerate() {
+                            let _ = parsed_content.tasks[taskindex].steps[stepindex].parsemodule(); // TODO : error handling required here
+                        }
+                    }
+                    return parsed_content;
+                }
                 Err(_e) => {
                     exit(1) // Placeholder : error handling required here
                 }
