@@ -45,7 +45,8 @@ Host : 172.17.0.2 (Changed)
 ├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
 │Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
 ├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│3. Install git for Fedora│          git already present          │None                                │
+│Prerequisites│2. Install git for Debian│          git already present          │None                                │
+│             │                         │                Upgrade                │Success : APT upgrade successful    │
 └─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
 ~~~
 
