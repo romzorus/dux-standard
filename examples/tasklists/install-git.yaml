@@ -1,15 +1,11 @@
-- name: Install git
+---
+- name: Prerequisites
   steps:
-    - !apt
-      state: absent
-      package: git
-      upgrade: true
+    - name: 1. Test SSH connectiviy
+      ping:
 
-    # - !yum
-    #   upgrade: true
-    #   state: present
-    #   package: git
-    
-    - !dnf
-      state: present
-      package: git
+    - name: 2. Install git for Debian
+      apt:
+        state: present
+        package: git
+        upgrade: true
