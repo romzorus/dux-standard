@@ -12,19 +12,20 @@ A worker node can be either a physical/virtual machine or a container.
 
 ## All-in-one dux tool
 
-`dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key>`
+`dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key> --threads <number>`
 
 with `tasklist.yaml`
 ~~~
-- name: Install git
+- name: Prerequisites
   steps:
-    - !apt
-      state: present
-      package: git
-    
-    - !dnf
-      state: present
-      package: git
+    - name: 1. Test SSH connectiviy
+      ping:
+
+    - name: 2. Install git for Debian
+      apt:
+        state: present
+        package: git
+        upgrade: true
 ~~~
 and `hostlist.yaml`
 ~~~
@@ -34,6 +35,18 @@ hosts:
   - 172.17.0.4
   - 172.17.0.5
   - 172.17.0.6
+~~~
+**Output example**
+
+~~~
+Host : 172.17.0.2 (Changed)
+┌─────────────┬─────────────────────────┬───────────────────────────────────────┬────────────────────────────────────┐
+│         Task│          Step           │                Changes                │Results                             │
+├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
+├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│3. Install git for Fedora│          git already present          │None                                │
+└─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
 ~~~
 
 # Modules available
