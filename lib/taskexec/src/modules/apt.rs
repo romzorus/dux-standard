@@ -31,7 +31,13 @@ impl AptBlockExpectedState {
                         assert!(hosthandler.ssh2.sshsession.authenticated());
                         
                         // Check is package is already installed or needs to be
-                        if ! is_package_installed(hosthandler, self.package.clone().unwrap()) {
+                        if is_package_installed(hosthandler, self.package.clone().unwrap()) {
+                            changes.push(
+                                ModuleApiCall::None(
+                                    format!("{} already present", self.package.clone().unwrap())
+                                )
+                            );
+                        } else {
                             // Package is absent and needs to be installed
                             changes.push(
                                 ModuleApiCall::Apt(
@@ -51,6 +57,12 @@ impl AptBlockExpectedState {
                                     AptApiCall::from("remove", Some(self.package.clone().unwrap()))
                                 )
                             );
+                        } else {
+                            changes.push(
+                                ModuleApiCall::None(
+                                    format!("{} already absent", self.package.clone().unwrap())
+                                )
+                            );
                         }
                     }
                     _ => {}
@@ -58,6 +70,9 @@ impl AptBlockExpectedState {
             }
         }
 
+        // TODO: have this do an "apt update"
+        // -> if no update available, state = Matched
+        // -> if updates available, state = ApiCall -> action = "apt upgrade"
         if let Some(value) = self.upgrade {
             if value {
                 changes.push(
@@ -68,8 +83,9 @@ impl AptBlockExpectedState {
             }
         }
 
+        // FIXME: Now that we are pushing ApiCall::None, will this ever be empty ? To be checked
         if changes.is_empty() {
-            return ModuleBlockChange::matched("Package already in expected state");
+            return ModuleBlockChange::matched("Package(s) already in expected state");
         } else {
             return ModuleBlockChange::changes(changes);
         }

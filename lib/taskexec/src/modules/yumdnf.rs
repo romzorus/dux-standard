@@ -37,7 +37,13 @@ impl YumDnfBlockExpectedState {
                         assert!(hosthandler.ssh2.sshsession.authenticated());
                         
                         // Check is package is already installed or needs to be
-                        if ! is_package_installed(hosthandler, &tool, self.package.clone().unwrap()) {
+                        if is_package_installed(hosthandler, &tool, self.package.clone().unwrap()) {
+                            changes.push(
+                                ModuleApiCall::None(
+                                    format!("{} already present", self.package.clone().unwrap())
+                                )
+                            );
+                        } else {
                             // Package is absent and needs to be installed
                             changes.push(
                                 ModuleApiCall::YumDnf(
@@ -57,13 +63,20 @@ impl YumDnfBlockExpectedState {
                                     YumDnfApiCall::from("remove", &tool, Some(self.package.clone().unwrap()))
                                 )
                             );
+                        } else {
+                            changes.push(
+                                ModuleApiCall::None(
+                                    format!("{} already absent", self.package.clone().unwrap())
+                                )
+                            );
                         }
                     }
                     _ => {}
                 }
             }
         }
-
+        // TODO : have this to do a "dnf check-update" only
+        // If updates available -> ApiCall, if not, Matched
         if let Some(value) = self.upgrade {
             if value {
                 changes.push(

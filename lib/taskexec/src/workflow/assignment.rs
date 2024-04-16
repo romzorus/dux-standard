@@ -1,3 +1,4 @@
+use crate::prelude::ModuleApiCall;
 // This part is used to generate an Assignment based on a TaskList and a HostList.
 use crate::workflow::change::ChangeList;
 use crate::workflow::task::TaskList;
@@ -97,9 +98,17 @@ impl Assignment {
                                 finalstatus = AssignmentFinalStatus::Failed(e);
                                 break;
                             }
-                            ModuleBlockChange::ModuleApiCalls(_) => {
-                                finalstatus = AssignmentFinalStatus::Unset;
-                                break;
+                            ModuleBlockChange::ModuleApiCalls(apicalllist) => {
+                                for apicall in apicalllist {
+                                    match apicall {
+                                        ModuleApiCall::None(_) => {}
+                                        _ => {
+                                            finalstatus = AssignmentFinalStatus::Unset;
+                                            break;
+                                        }
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -119,7 +128,10 @@ impl Assignment {
         
         match self.finalstatus {
             AssignmentFinalStatus::Failed(_) => {}
-            AssignmentFinalStatus::AlreadyMatched => {}
+            AssignmentFinalStatus::AlreadyMatched => {
+                let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
+                self.tasklistresult = tasklistresult;
+            }
             _ => {
                 let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
                 self.tasklistresult = tasklistresult;
