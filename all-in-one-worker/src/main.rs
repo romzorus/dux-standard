@@ -67,11 +67,17 @@ fn main() {
             AssignmentFinalStatus::Unset
         ));
     }
+
+    // If the number of threads to use is not specified, one thread per CPU of the local machine
+    let threads_number = match cliargs.threads {
+        None => { std::thread::available_parallelism().unwrap().get() }
+        Some(number) => { number }
+    };
  
     let resultslist: Mutex<Vec<Assignment>> = Mutex::new(Vec::new());
 
     let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(cliargs.threads)
+        .num_threads(threads_number)
         .build()
         .unwrap();
 

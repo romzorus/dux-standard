@@ -29,9 +29,9 @@ pub struct CliArgs {
     #[arg(short, long)]
     pub password: Option<String>,
 
-    /// Number of threads (aka number of remote hosts handled in parallel)
-    #[arg(long, default_value_t = 4)]
-    pub threads: usize,
+    /// Number of threads used by all-in-one tool (default = number of CPU of the local machine)
+    #[arg(long)]
+    pub threads: Option<usize>,
 }
 
 pub fn parse_cli_args() -> CliArgs {
