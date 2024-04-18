@@ -8,44 +8,58 @@ Build a scalable automation / orchestration tool (something that runs a task on 
 
 A worker node can be either a physical/virtual machine or a container.
 
-# Usage
+# All-in-one dux tool
 
-## All-in-one dux tool
+**Usage** : ```dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key>```
 
-`dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key> --threads <number>`
-
-with `tasklist.yaml`
+*with `tasklist.yaml`*
 ~~~
 - name: Prerequisites
   steps:
-    - name: 1. Test SSH connectiviy
+    - name: 1. Test SSH connectivity
       ping:
 
     - name: 2. Install git for Debian
+      with_sudo: true
       apt:
         state: present
         package: git
         upgrade: true
 ~~~
-and `hostlist.yaml`
+*and `hostlist.yaml`*
 ~~~
 hosts:
-  - 172.17.0.2
-  - 172.17.0.3
-  - 172.17.0.4
-  - 172.17.0.5
-  - 172.17.0.6
+  - 192.168.1.6
+  - 192.168.1.85
 ~~~
 **Output example**
 
 ~~~
-Host : 172.17.0.2 (Changed)
+
+    ██████╗ ██╗   ██╗██╗  ██╗
+    ██╔══██╗██║   ██║╚██╗██╔╝
+    ██║  ██║██║   ██║ ╚███╔╝ 
+    ██║  ██║██║   ██║ ██╔██╗ 
+    ██████╔╝╚██████╔╝██╔╝ ██╗
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+
+Host : 192.168.1.6 (Changed)
 ┌─────────────┬─────────────────────────┬───────────────────────────────────────┬────────────────────────────────────┐
 │         Task│          Step           │                Changes                │Results                             │
 ├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
 │Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
 ├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│2. Install git for Debian│          git already present          │None                                │
+│Prerequisites│2. Install git for Debian│             Install - git             │Success : git install successful    │
+│             │                         │                Upgrade                │Success : APT upgrade successful    │
+└─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
+
+Host : 192.168.1.85 (Changed)
+┌─────────────┬─────────────────────────┬───────────────────────────────────────┬────────────────────────────────────┐
+│         Task│          Step           │                Changes                │Results                             │
+├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
+├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│2. Install git for Debian│             Install - git             │Success : git install successful    │
 │             │                         │                Upgrade                │Success : APT upgrade successful    │
 └─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
 ~~~
@@ -58,6 +72,36 @@ Host : 172.17.0.2 (Changed)
 | `dnf` | Manage packages on Fedora-like distributions (no difference with `yum`) |
 | `ping`   | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
+
+# Have a remote host handled by Dux
+
+## On controlled host
+As for other automation tools, Dux needs an account to use on the controlled host. Let's create a `dux` user on the controlled host and give it some privileges :
+```
+# Create user (set password interactively)
+sudo adduser dux
+
+# Add user to sudo group
+sudo usermod -aG sudo dux
+
+# Create a sudoers file for this user
+echo "dux ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/dux
+```
+
+## On controller host (where Dux is installed)
+The ideal is to have a SSH passwordless connection :
+```
+# Generate a SSH key (no passphrase for the example)
+ssh-keygen -t ed25519 -f controller_key -N "" -q
+
+# Have this key allowed on the controlled host
+ssh-copy-id -i controller_key.pub dux@<controlled host address>
+```
+
+**After this, you can use `dux` like this from the master host**
+
+```dux -t <tasklist.yaml> -l <hostlist.yaml> -u dux -k <path to controller_key>```
+
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
