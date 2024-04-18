@@ -14,10 +14,10 @@ pub struct AptBlockExpectedState {
 }
 
 impl AptBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
+    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
-        if ! is_apt_working(hosthandler) {
+        if ! is_apt_working(hosthandler, privilege.clone()) {
             return ModuleBlockChange::failed_to_evaluate("APT not working on this host");
         }
 
@@ -41,7 +41,7 @@ impl AptBlockExpectedState {
                             // Package is absent and needs to be installed
                             changes.push(
                                 ModuleApiCall::Apt(
-                                    AptApiCall::from("install", Some(self.package.clone().unwrap()))
+                                    AptApiCall::from("install", Some(self.package.clone().unwrap()), privilege.clone())
                                 )
                             );
                         }
@@ -54,7 +54,7 @@ impl AptBlockExpectedState {
                             // Package is present and needs to be removed
                             changes.push(
                                 ModuleApiCall::Apt(
-                                    AptApiCall::from("remove", Some(self.package.clone().unwrap()))
+                                    AptApiCall::from("remove", Some(self.package.clone().unwrap()), privilege.clone())
                                 )
                             );
                         } else {
@@ -77,7 +77,7 @@ impl AptBlockExpectedState {
             if value {
                 changes.push(
                     ModuleApiCall::Apt(
-                        AptApiCall::from("upgrade", None)
+                        AptApiCall::from("upgrade", None, privilege.clone())
                     )
                 );
             }
@@ -96,6 +96,7 @@ impl AptBlockExpectedState {
 pub struct AptApiCall {
     action: String,
     package: Option<String>,
+    privilege: Privilege
 }
 
 impl AptApiCall {
@@ -115,10 +116,11 @@ impl AptApiCall {
         }
     }
 
-    pub fn from(action: &str, package: Option<String>) -> AptApiCall {
+    pub fn from(action: &str, package: Option<String>, privilege: Privilege) -> AptApiCall {
         AptApiCall {
             action: action.to_string(),
-            package
+            package,
+            privilege
         }
     }
 
@@ -128,7 +130,7 @@ impl AptApiCall {
         match self.action.as_str() {
             "install" => {
                 let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get install -y {}", self.package.clone().unwrap());
-                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -149,8 +151,8 @@ impl AptApiCall {
                 }
             }
             "remove" => {
-                let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get autoremove -y {}", self.package.clone().unwrap());
-                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                let cmd = format!("DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y {}", self.package.clone().unwrap());
+                let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -171,8 +173,9 @@ impl AptApiCall {
                 }
             }
             "upgrade" => {
-                let cmd = "DEBIAN_FRONTEND=noninteractive apt-get update && apt-get upgrade -y";
-                let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+                hosthandler.run_cmd("apt-get update", self.privilege.clone()).unwrap();
+                let cmd = "DEBIAN_FRONTEND=noninteractive apt-get upgrade -qq";
+                let cmd_result = hosthandler.run_cmd(cmd, self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -195,10 +198,10 @@ impl AptApiCall {
 
 // TODO : add more granular error messages
 // -> apt not working but present ? -> permission issue ? (return code = 100)
-fn is_apt_working(hosthandler: &mut HostHandler) -> bool {
+fn is_apt_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
 
-    let cmd = "apt-get check";
-    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+    let cmd = "DEBIAN_FRONTEND=noninteractive apt-get check";
+    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
 
     if cmd_result.exitcode != 0 {
         return false;
@@ -209,11 +212,14 @@ fn is_apt_working(hosthandler: &mut HostHandler) -> bool {
 
 fn is_package_installed(hosthandler: &mut HostHandler, package: String) -> bool {
     let test = hosthandler.run_cmd(
-        format!("apt-cache policy {}", package).as_str()
+        format!("dpkg -s {}", package).as_str(),
+        Privilege::Usual
     ).unwrap();
 
-    match test.stdout.find("Installed: (none)") {
-        Some(_) => { return false; }
-        None => { return true; }
+    if test.exitcode == 0 {
+        return true;
+    } else {
+        return false;
     }
+
 }
