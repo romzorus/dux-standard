@@ -5,6 +5,7 @@
       ping:
 
     - name: 2. Install git for Debian
+      with_sudo: true
       apt:
         state: present
         package: git
