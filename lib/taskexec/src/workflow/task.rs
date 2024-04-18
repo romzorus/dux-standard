@@ -70,8 +70,27 @@ impl TaskBlock {
     pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> TaskChange {
         let mut list: Vec<ModuleBlockChange> = Vec::new();
 
+        // TODO : add some checking (with_sudo and run_as need to be mutually exclusive)
         for step in self.clone().steps.into_iter() {
-            let moduleblockchange = step.moduleblock.unwrap().dry_run_moduleblock(hosthandler);
+            let privilege = match step.with_sudo {
+                None => {
+                    match step.run_as {
+                        None => { Privilege::Usual }
+                        Some(username) => { Privilege::AsUser(username) }
+                    }
+                }
+                Some(value) => {
+                    if value { Privilege::WithSudo }
+                    else {
+                        match step.run_as {
+                            None => { Privilege::Usual }
+                            Some(username) => { Privilege::AsUser(username) }
+                        }
+                    }
+                }
+            };
+
+            let moduleblockchange = step.moduleblock.unwrap().dry_run_moduleblock(hosthandler, privilege);
             list.push(moduleblockchange);
         }
 

@@ -21,13 +21,13 @@ pub enum ModuleBlockExpectedState {
 impl ModuleBlockExpectedState {
     pub fn new() -> ModuleBlockExpectedState { ModuleBlockExpectedState::None }
 
-    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
+    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         match &self {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
-            ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler) }
-            ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler) }
-            ModuleBlockExpectedState::Ping(block) => { block.dry_run_block(hosthandler) }
-            ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler) }
+            ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler, privilege) }
+            ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler, privilege) }
+            ModuleBlockExpectedState::Ping(block) => { block.dry_run_block(hosthandler, privilege) }
+            ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler, privilege) }
         }
     }
 }

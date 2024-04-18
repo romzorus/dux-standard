@@ -14,14 +14,14 @@ pub struct YumDnfBlockExpectedState {
 }
 
 impl YumDnfBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
+    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let mut tool = String::new();
 
-        if is_dnf_working(hosthandler) {
+        if is_dnf_working(hosthandler, privilege.clone()) {
             tool = String::from("dnf");
-        } else if is_yum_working(hosthandler) {
+        } else if is_yum_working(hosthandler, privilege.clone()) {
             tool = String::from("yum");
         } else {
             return ModuleBlockChange::failed_to_evaluate("Neither YUM nor DNF work on this host");
@@ -37,7 +37,7 @@ impl YumDnfBlockExpectedState {
                         assert!(hosthandler.ssh2.sshsession.authenticated());
                         
                         // Check is package is already installed or needs to be
-                        if is_package_installed(hosthandler, &tool, self.package.clone().unwrap()) {
+                        if is_package_installed(hosthandler, &tool, self.package.clone().unwrap(), privilege.clone()) {
                             changes.push(
                                 ModuleApiCall::None(
                                     format!("{} already present", self.package.clone().unwrap())
@@ -47,7 +47,7 @@ impl YumDnfBlockExpectedState {
                             // Package is absent and needs to be installed
                             changes.push(
                                 ModuleApiCall::YumDnf(
-                                    YumDnfApiCall::from("install", &tool, Some(self.package.clone().unwrap()))
+                                    YumDnfApiCall::from("install", &tool, Some(self.package.clone().unwrap()), privilege.clone())
                                 )
                             );
                         }
@@ -56,11 +56,11 @@ impl YumDnfBlockExpectedState {
                         assert!(hosthandler.ssh2.sshsession.authenticated());
                 
                         // Check is package is already absent or needs to be removed
-                        if is_package_installed(hosthandler, &tool, self.package.clone().unwrap()) {
+                        if is_package_installed(hosthandler, &tool, self.package.clone().unwrap(), privilege.clone()) {
                             // Package is present and needs to be removed
                             changes.push(
                                 ModuleApiCall::YumDnf(
-                                    YumDnfApiCall::from("remove", &tool, Some(self.package.clone().unwrap()))
+                                    YumDnfApiCall::from("remove", &tool, Some(self.package.clone().unwrap()), privilege.clone())
                                 )
                             );
                         } else {
@@ -81,7 +81,7 @@ impl YumDnfBlockExpectedState {
             if value {
                 changes.push(
                     ModuleApiCall::YumDnf(
-                        YumDnfApiCall::from("upgrade", &tool, None)
+                        YumDnfApiCall::from("upgrade", &tool, None, privilege.clone())
                     )
                 );
             }
@@ -100,6 +100,7 @@ pub struct YumDnfApiCall {
     action: String,
     tool: String,
     package: Option<String>,
+    privilege: Privilege
 }
 
 impl YumDnfApiCall {
@@ -119,11 +120,12 @@ impl YumDnfApiCall {
         }
     }
 
-    pub fn from(action: &str, tool: &String, package: Option<String>) -> YumDnfApiCall {
+    pub fn from(action: &str, tool: &String, package: Option<String>, privilege: Privilege) -> YumDnfApiCall {
         YumDnfApiCall {
             action: action.to_string(),
             tool: tool.clone(),
-            package
+            package,
+            privilege
         }
     }
 
@@ -133,7 +135,7 @@ impl YumDnfApiCall {
         match self.action.as_str() {
             "install" => {
                 let cmd = format!("{} install -y {}", self.tool, self.package.clone().unwrap());
-                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -155,7 +157,7 @@ impl YumDnfApiCall {
             }
             "remove" => {
                 let cmd = format!("{} remove -y {}", self.tool, self.package.clone().unwrap());
-                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -177,7 +179,7 @@ impl YumDnfApiCall {
             }
             "upgrade" => {
                 let cmd = format!("{} update -y --refresh", self.tool);
-                let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+                let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
                     return ApiCallResult::from(
@@ -199,10 +201,10 @@ impl YumDnfApiCall {
     }
 }
 
-fn is_dnf_working(hosthandler: &mut HostHandler) -> bool {
+fn is_dnf_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
 
     let cmd = "dnf";
-    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
 
     if cmd_result.exitcode == 0 {
         return true;
@@ -211,10 +213,10 @@ fn is_dnf_working(hosthandler: &mut HostHandler) -> bool {
     }
 }
 
-fn is_yum_working(hosthandler: &mut HostHandler) -> bool {
+fn is_yum_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
 
     let cmd = "yum";
-    let cmd_result = hosthandler.run_cmd(cmd).unwrap();
+    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
 
     if cmd_result.exitcode == 0 {
         return true;
@@ -223,9 +225,10 @@ fn is_yum_working(hosthandler: &mut HostHandler) -> bool {
     }
 }
 
-fn is_package_installed(hosthandler: &mut HostHandler, tool: &String, package: String) -> bool {
+fn is_package_installed(hosthandler: &mut HostHandler, tool: &String, package: String, privilege: Privilege) -> bool {
     let test = hosthandler.run_cmd(
-        format!("{tool} list installed {}", package).as_str()
+        format!("{tool} list installed {}", package).as_str(),
+        privilege
     ).unwrap();
 
     if test.exitcode == 0 {

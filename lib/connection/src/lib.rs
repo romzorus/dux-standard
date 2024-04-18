@@ -1,3 +1,5 @@
+use serde::Deserialize;
+
 use errors::Error;
 use crate::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
 
@@ -52,11 +54,12 @@ impl HostHandler {
         }
     }
     
-    pub fn run_cmd(&mut self, cmd: &str) -> Result<CmdResult, Error> {
+    pub fn run_cmd(&mut self, cmd: &str, privilege: Privilege) -> Result<CmdResult, Error> {
+        let final_cmd = final_cmd(cmd.to_string(), privilege.clone());
         match self.connectionmode {
             ConnectionMode::Unset => { return Err(Error::MissingInitialization); }
             ConnectionMode::LocalHost => { return Ok(CmdResult::new()); } // Nothing to initialize when working on localhost
-            ConnectionMode::Ssh2 => { self.ssh2.run_cmd(cmd) }
+            ConnectionMode::Ssh2 => { self.ssh2.run_cmd(final_cmd.as_str()) }
             // ConnectionMode::Ssh3 => { self.ssh3.unwrap().run_cmd() }
         }
     }
@@ -85,4 +88,26 @@ impl CmdResult {
             stdout: String::new()
         }
     }
+}
+
+// TODO : add some syntax checks
+fn final_cmd(cmd: String, privilege: Privilege) -> String {
+    match privilege {
+        Privilege::Usual => { return cmd; }
+        Privilege::WithSudo => {
+            let final_cmd = format!("sudo -u root {}", cmd);
+            return final_cmd;
+        }
+        Privilege::AsUser(username) => {
+            let final_cmd = format!("sudo -u {} {}", username, cmd);
+            return final_cmd;
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub enum Privilege {
+    Usual,              // Run cmd as the current authenticated user
+    WithSudo,           // Run cmd with sudo
+    AsUser(String)      // Run cmd as another user
 }

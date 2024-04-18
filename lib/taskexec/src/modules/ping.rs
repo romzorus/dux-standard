@@ -10,18 +10,20 @@ use connection::prelude::*;
 pub struct PingBlockExpectedState {}
 
 impl PingBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler) -> ModuleBlockChange {
+    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         return ModuleBlockChange::changes(
-            vec![ModuleApiCall::Ping(PingApiCall{})]
+            vec![ModuleApiCall::Ping(PingApiCall{privilege})]
         );
 
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct PingApiCall {}
+pub struct PingApiCall {
+    privilege: Privilege
+}
 
 impl PingApiCall {
 
@@ -29,15 +31,11 @@ impl PingApiCall {
         return format!("Check SSH connectivity with remote host");
     }
 
-    pub fn from(action: &str, package: Option<String>) -> PingApiCall {
-        return PingApiCall{};
-    }
-
     pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let cmd = String::from("DEBIAN_FRONTEND=noninteractive id");
-        let cmd_result = hosthandler.run_cmd(cmd.as_str()).unwrap();
+        let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
         
         if cmd_result.exitcode == 0 {
             return ApiCallResult::from(
