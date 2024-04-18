@@ -6,6 +6,9 @@ use taskexec::prelude::*;
 use taskparser::prelude::*;
 
 fn main() {
+
+    welcome_message();
+
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
 

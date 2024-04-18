@@ -2,6 +2,18 @@ use termimad::crossterm::style::Color::*;
 use termimad::*;
 use taskexec::prelude::*;
 
+pub fn welcome_message() {
+
+    println!(r"
+    ██████╗ ██╗   ██╗██╗  ██╗
+    ██╔══██╗██║   ██║╚██╗██╔╝
+    ██║  ██║██║   ██║ ╚███╔╝ 
+    ██║  ██║██║   ██║ ██╔██╗ 
+    ██████╔╝╚██████╔╝██╔╝ ██╗
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+");
+}
+
 pub fn display_output(assignment: Assignment) {
 
     let mut skin = MadSkin::default();
