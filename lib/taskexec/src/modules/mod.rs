@@ -1,4 +1,5 @@
 // **BEACON_1**
+pub mod cmd;
 pub mod blocks;
 pub mod apt;
 pub mod ping;
@@ -14,6 +15,7 @@ use connection::prelude::*;
 pub enum ModuleBlockExpectedState {
     None, // Used for new() methods, initializations and errors
 // **BEACON_2**
+    Cmd(CmdBlockExpectedState),
     Apt(AptBlockExpectedState),
     Dnf(YumDnfBlockExpectedState),
     Ping(PingBlockExpectedState),
@@ -27,6 +29,7 @@ impl ModuleBlockExpectedState {
         match &self {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
 // **BEACON_3**
+            ModuleBlockExpectedState::Cmd(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Ping(block) => { block.dry_run_block(hosthandler, privilege) }
@@ -39,6 +42,7 @@ impl ModuleBlockExpectedState {
 pub enum ModuleApiCall {
     None(String),
 // **BEACON_4**
+    Cmd(CmdApiCall),
     Apt(AptApiCall),
     Ping(PingApiCall),
     YumDnf(YumDnfApiCall)

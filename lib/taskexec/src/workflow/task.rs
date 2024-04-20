@@ -23,6 +23,7 @@ pub struct Step {
     // FIXME: Having an attribute per module is at the moment the only way found to be able to write "apt:" and not "!apt".
     // It needs a parsemodule() method to check that only one attribute per step is filled.
 // **BEACON_1**
+    pub cmd: Option<CmdBlockExpectedState>,
     pub apt: Option<AptBlockExpectedState>,
     pub dnf: Option<YumDnfBlockExpectedState>,
     #[serde(default, deserialize_with = "deserialize_argumentlessmodule")]
@@ -35,6 +36,7 @@ impl Step {
         let mut counter: u32 = 0; // Used to check that only one module is used per Step
 
 // **BEACON_2**
+        if let Some(content) = self.cmd.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Cmd(content)); }
         if let Some(content) = self.apt.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Apt(content)); }
         if let Some(content) = self.dnf.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Dnf(content)); }
         if let Some(_content) = self.ping.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Ping(PingBlockExpectedState{})); } // Ping "content" is always null at the moment
