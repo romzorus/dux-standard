@@ -6,9 +6,8 @@ pub fn welcome_message() {
 
     println!(r"
     ██████╗ ██╗   ██╗██╗  ██╗
-    ██╔══██╗██║   ██║╚██╗██╔╝
-    ██║  ██║██║   ██║ ╚███╔╝ 
-    ██║  ██║██║   ██║ ██╔██╗ 
+    ██╔══██╗██║   ██║╚═███╔═╝
+    ██║  ██║██║   ██║  ███║ 
     ██████╔╝╚██████╔╝██╔╝ ██╗
     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
 ");
@@ -32,20 +31,18 @@ pub fn display_output(assignment: Assignment) {
                 format!("\n|**Failed**|{}|", error).as_str()
             );
         }
-        _ => {
-            table_content.push_str("\n|-:|:-:|:-:|-");
-            table_content.push_str("\n|**Task**|**Step**|**Changes**|**Results**|");
-           
+        _ => {          
             for (taskblockindex, taskblock) in assignment.tasklist.tasks.iter().enumerate() {
-                // A "step" is a ModuleBlockExpectedState (simplifies the reading)
+                table_content.push_str(format!("\nTask : *{}*", taskblock.name.clone().unwrap_or(String::from("no name for TaskBlock"))).as_str());
+                table_content.push_str("\n|:-:|:-:|-");
+                table_content.push_str("\n|**Step**|**Changes**|**Results**|");
                 for (stepindex, step) in taskblock.steps.iter().enumerate() {
-                    table_content.push_str("\n|-:|:-|:-:|-");
+                    table_content.push_str("\n|:-|:-:|-");
                     
                     match &assignment.changelist.taskchanges.clone().unwrap()[taskblockindex].stepchanges[stepindex] {
                         ModuleBlockChange::AlreadyMatched(message) => {
                             table_content.push_str(
-                                format!("\n|{}|{}| Matched : {}|{}|",
-                                        taskblock.name.clone().unwrap_or(String::from("no name for TaskBlock")),
+                                format!("\n|{}| Matched : {}|{}|",
                                         output_nice_step(&step),
                                         message,
                                         "N/A"
@@ -54,8 +51,7 @@ pub fn display_output(assignment: Assignment) {
                         }
                         ModuleBlockChange::FailedToEvaluate(message) => {
                             table_content.push_str(
-                                format!("\n|{}|{}| Failed to evaluate : {}|{}|",
-                                        taskblock.name.clone().unwrap_or(String::from("no name for TaskBlock")),
+                                format!("\n|{}| Failed to evaluate : {}|{}|",
                                         output_nice_step(&step),
                                         message,
                                         "N/A"
@@ -64,18 +60,17 @@ pub fn display_output(assignment: Assignment) {
                         }
                         ModuleBlockChange::ModuleApiCalls(apicalls) => {
                             table_content.push_str(
-                                format!("\n|{}|{}|{}|{}|",
-                                    taskblock.name.clone().unwrap_or(String::from("no name for TaskBlock")),
+                                format!("\n|{}|{}|{}|",
                                     output_nice_step(&step),
                                     assignment.changelist.taskchanges.clone().unwrap()[taskblockindex].stepchanges.clone()[stepindex].display()[0],
                                     output_nice_result(&assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[0].status)
                                 ).as_str()
                             );
                             
-                            for (apicallindex, apicallcontent) in apicalls.iter().enumerate() {
+                            for (apicallindex, _apicallcontent) in apicalls.iter().enumerate() {
                                 if apicallindex > 0 {
                                     table_content.push_str(
-                                        format!("\n|||{}|{}|",
+                                        format!("\n||{}|{}|",
                                             assignment.changelist.taskchanges.clone().unwrap()[taskblockindex].stepchanges.clone()[stepindex].display()[apicallindex],
                                             output_nice_result(&assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[apicallindex].status)
                                         ).as_str()
