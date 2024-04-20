@@ -118,7 +118,7 @@ impl TaskList {
             tasks
         }
     }
-    pub fn dry_run_tasklist(&self, correlationid: String, hosthandler: &mut HostHandler) -> ChangeList {
+    pub fn dry_run_tasklist(&self, _correlationid: String, hosthandler: &mut HostHandler) -> ChangeList {
         let mut list: Vec<TaskChange> = Vec::new();
 
         for taskcontent in self.tasks.clone().iter() {

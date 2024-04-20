@@ -51,8 +51,8 @@ impl ModuleBlockChange {
     pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
 
         match self {
-            ModuleBlockChange::AlreadyMatched(message) => { return ModuleBlockResult::none() }
-            ModuleBlockChange::FailedToEvaluate(message) => { return ModuleBlockResult::none() }
+            ModuleBlockChange::AlreadyMatched(_message) => { return ModuleBlockResult::none() }
+            ModuleBlockChange::FailedToEvaluate(_message) => { return ModuleBlockResult::none() }
             ModuleBlockChange::ModuleApiCalls(changeslist) => {
                 let mut results: Vec<ApiCallResult> = Vec::new();
                 for change in changeslist {
@@ -103,6 +103,7 @@ impl TaskChange {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct ChangeList {
     pub taskchanges: Option<Vec<TaskChange>>,

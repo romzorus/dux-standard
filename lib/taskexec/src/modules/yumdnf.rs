@@ -13,6 +13,7 @@ pub struct YumDnfBlockExpectedState {
     upgrade: Option<bool>
 }
 
+#[allow(unused_assignments)] // 'tool' is never actually read, only borrowed
 impl YumDnfBlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());

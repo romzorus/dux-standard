@@ -1,10 +1,10 @@
-use std::{io::Write, path::PathBuf};
+use std::path::PathBuf;
 use ssh2::Session;
 use std::net::TcpStream;
 use errors::Error;
 use std::io::Read;
 
-use crate::{CmdResult, Privilege};
+use crate::CmdResult;
 
 #[derive(Clone)]
 pub struct Ssh2HostHandler {
