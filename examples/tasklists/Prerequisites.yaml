@@ -14,7 +14,11 @@
       apt:
         state: present
         package: git
+    
+    - name: 4. Clean before clone
+      command:
+        content: rm -rf dux
 
-    - name: 4. Clone a repository
-      cmd:
-       content: git clone https://gitlab.com/dux-tool/dux.git
+    - name: 5. Clone a repository
+      command:
+       content: git clone https://github.com/romzorus/dux.git

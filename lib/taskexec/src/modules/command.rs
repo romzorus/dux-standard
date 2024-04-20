@@ -1,4 +1,4 @@
-// Cmd module : <short description>
+// Command module : <short description>
 
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
@@ -7,11 +7,11 @@ use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct CmdBlockExpectedState {
+pub struct CommandBlockExpectedState {
     content: Option<String>,
 }
 
-impl CmdBlockExpectedState {
+impl CommandBlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
@@ -26,8 +26,8 @@ impl CmdBlockExpectedState {
                 );
             }
             Some(cmdcontent) => {
-                changes.push(ModuleApiCall::Cmd(
-                    CmdApiCall {
+                changes.push(ModuleApiCall::Command(
+                    CommandApiCall {
                         cmd: cmdcontent.to_string(),
                         privilege
                     }
@@ -40,12 +40,12 @@ impl CmdBlockExpectedState {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct CmdApiCall {
+pub struct CommandApiCall {
     cmd: String,
     privilege: Privilege
 }
 
-impl CmdApiCall {
+impl CommandApiCall {
 
     pub fn display(&self) -> String {
         return format!("Run command : {}", self.cmd);

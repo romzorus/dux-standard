@@ -1,7 +1,7 @@
 // **BEACON**
 
-pub use crate::modules::cmd::CmdBlockExpectedState;
-pub use crate::modules::cmd::CmdApiCall;
+pub use crate::modules::command::CommandBlockExpectedState;
+pub use crate::modules::command::CommandApiCall;
 
 pub use crate::modules::apt::AptBlockExpectedState;
 pub use crate::modules::apt::AptApiCall;

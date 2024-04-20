@@ -32,7 +32,7 @@ A worker node can be either a physical/virtual machine or a container.
         package: git
 
     - name: 4. Clone a repository
-      cmd:
+      command:
        content: git clone https://gitlab.com/dux-tool/dux.git
 ~~~
 *and `hostlist.yaml`*
@@ -85,10 +85,10 @@ Task : Prerequisites
 *(alphabetized)*
 | Module | Description |
 | ---      | ---      |
-| `apt`   | Manage packages on Debian-like distributions |
-| `cmd`   | Run a raw shell command on the controlled host |
+| `apt` | Manage packages on Debian-like distributions |
+| `command` | Run a single shell command on the controlled host |
 | `dnf` | Manage packages on Fedora-like distributions (no difference with `yum`) |
-| `ping`   | Test SSH connectivity with remote host |
+| `ping` | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
 
 # Have a remote host handled by Dux
