@@ -93,13 +93,15 @@ impl CmdResult {
 // TODO : add some syntax checks
 fn final_cmd(cmd: String, privilege: Privilege) -> String {
     match privilege {
-        Privilege::Usual => { return cmd; }
+        Privilege::Usual => {
+            return format!("{} 2>&1", cmd);
+        }
         Privilege::WithSudo => {
-            let final_cmd = format!("sudo -u root {}", cmd);
+            let final_cmd = format!("sudo -u root {} 2>&1", cmd);
             return final_cmd;
         }
         Privilege::AsUser(username) => {
-            let final_cmd = format!("sudo -u {} {}", username, cmd);
+            let final_cmd = format!("sudo -u {} {} 2>&1", username, cmd);
             return final_cmd;
         }
     }
