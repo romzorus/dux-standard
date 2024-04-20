@@ -118,6 +118,17 @@ ssh-copy-id -i controller_key.pub dux@<controlled host address>
 
 ```dux -t <tasklist.yaml> -l <hostlist.yaml> -u dux -k <path to controller_key>```
 
+## Contributions
+
+# Want to write a new module ?
+Because it can be tricky to integrate a new module in the codebase, a script will do that for you !
+
+*Let's create a `lineinfile` module :*
+```
+cd lib/taskexec/src/modules
+./integrate-new-module.sh lineinfile
+```
+A `lineinfile.rs` file is created in `lib/taskexec/src/modules`. Now you only have to care about this file. The integration is done. It is a template in which you will find explanations and guidelines. When you are done with this file, just `cargo build` and try using your new module in a TaskList !
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
