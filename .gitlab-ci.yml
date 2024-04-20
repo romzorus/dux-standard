@@ -28,7 +28,7 @@ build-for-fedora:
   image: romzorus/rpm-rust-build:v1.0
   script:
    - cargo build --release
-   - sed -i 's/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g' building/rpm/dux.spec
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux.spec
    - cp building/rpm/dux.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/duxtool-$DUX_VERSION-0.x86_64/
    - cp target/release/all-in-one-worker ~/rpmbuild/BUILD/duxtool
