@@ -88,11 +88,16 @@ impl YumDnfBlockExpectedState {
             }
         }
 
-        if changes.is_empty() {
-            return ModuleBlockChange::matched("Expected state already matched");
-        } else {
-            return ModuleBlockChange::changes(changes);
+        // If changes are only None, it means a Match. If only one change is not a None, return the whole list.
+        for change in changes.iter() {
+            match change {
+                ModuleApiCall::None(_) => {}
+                _ => {
+                    return ModuleBlockChange::changes(changes);
+                }
+            }
         }
+        return ModuleBlockChange::matched("Package(s) already in expected state");
     }
 }
 

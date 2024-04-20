@@ -1,7 +1,7 @@
 // APT Module : handle packages in Debian-like distributions
 
 use serde::Deserialize;
-use crate::workflow::change::ModuleBlockChange;
+use crate::workflow::change::{self, ModuleBlockChange};
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
@@ -83,12 +83,16 @@ impl AptBlockExpectedState {
             }
         }
 
-        // FIXME: Now that we are pushing ApiCall::None, will this ever be empty ? To be checked
-        if changes.is_empty() {
-            return ModuleBlockChange::matched("Package(s) already in expected state");
-        } else {
-            return ModuleBlockChange::changes(changes);
+        // If changes are only None, it means a Match. If only one change is not a None, return the whole list.
+        for change in changes.iter() {
+            match change {
+                ModuleApiCall::None(_) => {}
+                _ => {
+                    return ModuleBlockChange::changes(changes);
+                }
+            }
         }
+        return ModuleBlockChange::matched("Package(s) already in expected state");
     }
 }
 
