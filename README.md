@@ -10,21 +10,30 @@ A worker node can be either a physical/virtual machine or a container.
 
 # All-in-one dux tool
 
-**Usage** : ```dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key>```
+**Usage** : ```dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key> -u <username>```
 
 *with `tasklist.yaml`*
 ~~~
+---
 - name: Prerequisites
   steps:
-    - name: 1. Test SSH connectivity
+    - name: 1. Test SSH connectiviy
       ping:
 
-    - name: 2. Install git for Debian
+    - name: 2. Upgrade the whole system
+      with_sudo: true
+      apt:
+        upgrade: true
+
+    - name: 3. Install git
       with_sudo: true
       apt:
         state: present
         package: git
-        upgrade: true
+
+    - name: 4. Clone a repository
+      cmd:
+       content: git clone https://gitlab.com/dux-tool/dux.git
 ~~~
 *and `hostlist.yaml`*
 ~~~
@@ -44,24 +53,30 @@ hosts:
     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
 
 Host : 192.168.1.6 (Changed)
-┌─────────────┬─────────────────────────┬───────────────────────────────────────┬────────────────────────────────────┐
-│         Task│          Step           │                Changes                │Results                             │
-├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
-├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│2. Install git for Debian│             Install - git             │Success : git install successful    │
-│             │                         │                Upgrade                │Success : APT upgrade successful    │
-└─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
+┌─────────────┬───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
+│         Task│           Step            │                          Changes                          │Results                             │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│1. Test SSH connectiviy    │          Check SSH connectivity with remote host          │Success : Host reachable through SSH│
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│2. Upgrade the whole system│                          Upgrade                          │Success : APT upgrade successful    │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│3. Install git             │                    git already present                    │None                                │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│4. Clone a repository      │Run command : git clone https://gitlab.com/dux-tool/dux.git│Success : Command successfull       │
+└─────────────┴───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
 
 Host : 192.168.1.85 (Changed)
-┌─────────────┬─────────────────────────┬───────────────────────────────────────┬────────────────────────────────────┐
-│         Task│          Step           │                Changes                │Results                             │
-├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│1. Test SSH connectiviy  │Check SSH connectivity with remote host│Success : Host reachable through SSH│
-├─────────────┼─────────────────────────┼───────────────────────────────────────┼────────────────────────────────────┤
-│Prerequisites│2. Install git for Debian│             Install - git             │Success : git install successful    │
-│             │                         │                Upgrade                │Success : APT upgrade successful    │
-└─────────────┴─────────────────────────┴───────────────────────────────────────┴────────────────────────────────────┘
+┌─────────────┬───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
+│         Task│           Step            │                          Changes                          │Results                             │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│1. Test SSH connectiviy    │          Check SSH connectivity with remote host          │Success : Host reachable through SSH│
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│2. Upgrade the whole system│                          Upgrade                          │Success : APT upgrade successful    │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│3. Install git             │                    git already present                    │None                                │
+├─────────────┼───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
+│Prerequisites│4. Clone a repository      │Run command : git clone https://gitlab.com/dux-tool/dux.git│Success : Command successfull       │
+└─────────────┴───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
 ~~~
 
 # Modules available
@@ -69,6 +84,7 @@ Host : 192.168.1.85 (Changed)
 | Module | Description |
 | ---      | ---      |
 | `apt`   | Manage packages on Debian-like distributions |
+| `cmd`   | Run a raw shell command on the controlled host |
 | `dnf` | Manage packages on Fedora-like distributions (no difference with `yum`) |
 | `ping`   | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
