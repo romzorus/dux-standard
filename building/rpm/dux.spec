@@ -1,5 +1,5 @@
 Name:       duxtool
-Version:    0.0.4
+Version:    0.0.5
 Release:    0
 Summary:    Automation tool written in Rust
 License:    Apache License, Version 2.0
