@@ -1,3 +1,5 @@
+use colored::Colorize;
+
 use termimad::crossterm::style::Color::*;
 use termimad::*;
 use taskexec::prelude::*;
@@ -66,6 +68,21 @@ pub fn display_output(assignment: Assignment) {
                                     output_nice_result(&assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[0].status)
                                 ).as_str()
                             );
+
+                            match &assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[0].status {
+                                ApiCallStatus::ChangeFailed(_) => {
+                                    // Stop the table and show the full detail
+                                    table_content.push_str("\n|-");
+                                    println!("{}", skin.term_text(&table_content));
+                                    println!("{}",
+                                        &assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[0].output.as_ref().unwrap()
+                                            .red().bold()
+                                        );
+                                    
+                                    return;
+                                }
+                                _ => {}
+                            }
                             
                             for (apicallindex, _apicallcontent) in apicalls.iter().enumerate() {
                                 if apicallindex > 0 {
@@ -75,6 +92,21 @@ pub fn display_output(assignment: Assignment) {
                                             output_nice_result(&assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[apicallindex].status)
                                         ).as_str()
                                     );
+
+                                    match &assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[apicallindex].status {
+                                        ApiCallStatus::ChangeFailed(_) => {
+                                            // Stop the table and show the full detail
+                                            table_content.push_str("\n|-");
+                                            println!("{}", skin.term_text(&table_content));
+                                            println!("{}",
+                                                &assignment.tasklistresult.clone().taskresults[taskblockindex].stepresults.clone().unwrap()[stepindex].apicallresults[apicallindex].output.as_ref().unwrap()
+                                                    .red().bold()
+                                                );
+                                            
+                                            return;
+                                        }
+                                        _ => {}
+                                    }
                                 }
                             }
                         }
