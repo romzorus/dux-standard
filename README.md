@@ -17,7 +17,7 @@ A worker node can be either a physical/virtual machine or a container.
 ---
 - name: Prerequisites
   steps:
-    - name: 1. Test SSH connectiviy
+    - name: 1. Test SSH connectivity
       ping:
 
     - name: 2. Upgrade the whole system
