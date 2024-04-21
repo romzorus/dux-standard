@@ -30,10 +30,14 @@ A worker node can be either a physical/virtual machine or a container.
       apt:
         state: present
         package: git
-
-    - name: 4. Clone a repository
+    
+    - name: 4. Clean before clone
       command:
-       content: git clone https://gitlab.com/dux-tool/dux.git
+        content: rm -rf dux
+
+    - name: 5. Clone a repository
+      command:
+       content: git clone https://github.com/romzorus/dux.git
 ~~~
 *and `hostlist.yaml`*
 ~~~
@@ -52,32 +56,28 @@ hosts:
     ██████╔╝╚██████╔╝██╔╝ ██╗
     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
 
-Host : 192.168.1.6 (Changed)
+Host 192.168.1.6 : Changed
 Task : Prerequisites
 ┌───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
 │           Step            │                          Changes                          │Results                             │
 ├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│1. Test SSH connectiviy    │          Check SSH connectivity with remote host          │Success : Host reachable through SSH│
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│2. Upgrade the whole system│                          Upgrade                          │Success : APT upgrade successful    │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│3. Install git             │                    git already present                    │None                                │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│4. Clone a repository      │Run command : git clone https://gitlab.com/dux-tool/dux.git│Failure : Command failed            │
+│1. Test SSH connectivity   │Check SSH connectivity with remote host                    │Success : Host reachable through SSH│
+│2. Upgrade the whole system│Upgrade                                                    │Success : APT upgrade successful    │
+│3. Install git             │Install - git                                              │Success : git install successful    │
+│4. Clean before clone      │Run command : rm -rf dux                                   │Success : Command successfull       │
+│5. Clone a repository      │Run command : git clone https://github.com/romzorus/dux.git│Success : Command successfull       │
 └───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
 
-Host : 192.168.1.85 (Changed)
+Host 192.168.1.85 : Changed
 Task : Prerequisites
 ┌───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
 │           Step            │                          Changes                          │Results                             │
 ├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│1. Test SSH connectiviy    │          Check SSH connectivity with remote host          │Success : Host reachable through SSH│
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│2. Upgrade the whole system│                          Upgrade                          │Success : APT upgrade successful    │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│3. Install git             │                    git already present                    │None                                │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│4. Clone a repository      │Run command : git clone https://gitlab.com/dux-tool/dux.git│Failure : Command failed            │
+│1. Test SSH connectivity   │Check SSH connectivity with remote host                    │Success : Host reachable through SSH│
+│2. Upgrade the whole system│Upgrade                                                    │Success : APT upgrade successful    │
+│3. Install git             │Package(s) already in expected state                       │None                                │
+│4. Clean before clone      │Run command : rm -rf dux                                   │Success : Command successfull       │
+│5. Clone a repository      │Run command : git clone https://github.com/romzorus/dux.git│Success : Command successfull       │
 └───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
 ~~~
 
@@ -120,9 +120,9 @@ ssh-copy-id -i controller_key.pub dux@<controlled host address>
 
 ```dux -t <tasklist.yaml> -l <hostlist.yaml> -u dux -k <path to controller_key>```
 
-## Contributions
+# Contributions
 
-# Want to write a new module ?
+## Want to write a new module ?
 Because it can be tricky to integrate a new module in the codebase, a script will do that for you !
 
 *Let's create a `lineinfile` module :*
