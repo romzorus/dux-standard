@@ -1,12 +1,10 @@
 use crate::prelude::ModuleApiCall;
 // This part is used to generate an Assignment based on a TaskList and a HostList.
-use crate::workflow::change::ChangeList;
+use crate::workflow::change::{ChangeList, ModuleBlockChange};
 use crate::workflow::task::TaskList;
-use crate::workflow::result::TaskListResult;
+use crate::workflow::result::{ApiCallStatus, TaskListResult};
 use connection::prelude::*;
 use errors::Error;
-
-use super::change::ModuleBlockChange;
 
 #[derive(Clone)]
 pub struct Assignment {
@@ -78,7 +76,7 @@ impl Assignment {
                     Ok(_) => {}
                     Err(e) => {
                         self.changelist.taskchanges = None;
-                        self.finalstatus = AssignmentFinalStatus::Failed(format!("{:?}", e));
+                        self.finalstatus = AssignmentFinalStatus::FailedDryRun(format!("{:?}", e));
                         return Err(Error::FailedInitialization(format!("{:?}", e)));
                     }
                 }
@@ -95,7 +93,7 @@ impl Assignment {
                         match step {
                             ModuleBlockChange::AlreadyMatched(_) => {}
                             ModuleBlockChange::FailedToEvaluate(e) => {
-                                finalstatus = AssignmentFinalStatus::Failed(e);
+                                finalstatus = AssignmentFinalStatus::FailedDryRun(e);
                                 break;
                             }
                             ModuleBlockChange::ModuleApiCalls(apicalllist) => {
@@ -125,19 +123,26 @@ impl Assignment {
     // TODO : allow direct run with this method
     pub fn apply(&mut self) {
         assert_eq!(self.runningmode, RunningMode::Apply);
-        
-        match self.finalstatus {
-            AssignmentFinalStatus::Failed(_) => {}
-            AssignmentFinalStatus::AlreadyMatched => {
-                let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
-                self.tasklistresult = tasklistresult;
-            }
-            _ => {
-                let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
-                self.tasklistresult = tasklistresult;
-                self.finalstatus = AssignmentFinalStatus::Changed;
+        assert_eq!(self.finalstatus, AssignmentFinalStatus::Unset);
+
+        let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
+        // "Save" the results
+        self.tasklistresult = tasklistresult.clone();
+
+
+        // Decide on the final status of the Assignment based on all the results
+        // -> Considered successfull unless it failed at some point
+        let mut finalstatus = AssignmentFinalStatus::Changed;
+        for taskresult in tasklistresult.taskresults.iter() {
+            for stepresult in taskresult.stepresults.as_ref().unwrap().iter() {
+                for apicallresult in stepresult.apicallresults.iter() {
+                    if let ApiCallStatus::ChangeFailed(_) = apicallresult.status {
+                        finalstatus = AssignmentFinalStatus::FailedChange;
+                    }
+                }
             }
         }
+        self.finalstatus = finalstatus;
     }
 }
 
@@ -150,7 +155,8 @@ pub enum RunningMode {
 #[derive(PartialEq, Debug, Clone)]
 pub enum AssignmentFinalStatus {
     Unset,
-    Failed(String),
+    AlreadyMatched,
+    FailedDryRun(String),
     Changed,
-    AlreadyMatched
+    FailedChange
 }
