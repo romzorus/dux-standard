@@ -4,6 +4,7 @@ use crate::modules::ModuleBlockExpectedState;
 use crate::modules::blocks::*;
 use crate::workflow::change::{ChangeList, ModuleBlockChange, TaskChange};
 use connection::prelude::*;
+use errors::Error;
 
 
 #[derive(Debug, Clone, Deserialize)]
@@ -71,7 +72,7 @@ impl TaskBlock {
         }   
     }
 
-    pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> TaskChange {
+    pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> Result<TaskChange, Error> {
         let mut list: Vec<ModuleBlockChange> = Vec::new();
 
         // TODO : add some checking (with_sudo and run_as need to be mutually exclusive)
@@ -94,11 +95,17 @@ impl TaskBlock {
                 }
             };
 
-            let moduleblockchange = step.moduleblock.unwrap().dry_run_moduleblock(hosthandler, privilege);
-            list.push(moduleblockchange);
+            match step.moduleblock.unwrap().dry_run_moduleblock(hosthandler, privilege) {
+                Ok(moduleblockchange) => {
+                    list.push(moduleblockchange);
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
         }
 
-        return TaskChange::from(list)
+        return Ok(TaskChange::from(list));
     }
 }
 
@@ -118,21 +125,20 @@ impl TaskList {
             tasks
         }
     }
-    pub fn dry_run_tasklist(&self, _correlationid: String, hosthandler: &mut HostHandler) -> ChangeList {
+    pub fn dry_run_tasklist(&self, _correlationid: String, hosthandler: &mut HostHandler) -> Result<ChangeList, Error> {
         let mut list: Vec<TaskChange> = Vec::new();
 
         for taskcontent in self.tasks.clone().iter() {
-            let taskchange = taskcontent.dry_run_task(hosthandler);
-            list.push(taskchange);
+            match taskcontent.dry_run_task(hosthandler) {
+                Ok(taskchange) => {
+                    list.push(taskchange);
+                }
+                Err(e) => {
+                    return Err(e)
+                }
+            }
         }
-
-        return ChangeList::from(Some(list), hosthandler.clone());
-
-        // if list.iter().all(|x| x.stepchanges.is_none()) {
-        //     ChangeList::from(None, hosthandler.clone())
-        // } else {
-        //     ChangeList::from(Some(list), hosthandler.clone())
-        // }
+        return Ok(ChangeList::from(Some(list), hosthandler.clone()));
     }
 }
 

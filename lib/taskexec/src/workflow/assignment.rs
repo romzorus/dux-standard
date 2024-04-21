@@ -84,40 +84,56 @@ impl Assignment {
             }
         }
         
-        let changelist = self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler);
-        match &changelist.taskchanges {
-            Some(taskchangelist) => {
-                let mut finalstatus = AssignmentFinalStatus::AlreadyMatched;
-                for taskchange in taskchangelist {
-                    for step in taskchange.stepchanges.clone() {
-                        match step {
-                            ModuleBlockChange::AlreadyMatched(_) => {}
-                            ModuleBlockChange::FailedToEvaluate(e) => {
-                                finalstatus = AssignmentFinalStatus::FailedDryRun(e);
-                                break;
-                            }
-                            ModuleBlockChange::ModuleApiCalls(apicalllist) => {
-                                for apicall in apicalllist {
-                                    match apicall {
-                                        ModuleApiCall::None(_) => {}
-                                        _ => {
-                                            finalstatus = AssignmentFinalStatus::Unset;
-                                            break;
+        match self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler) {
+            Ok(changelist) => {
+                match &changelist.taskchanges {
+                    Some(taskchangelist) => {
+                        let mut finalstatus = AssignmentFinalStatus::AlreadyMatched;
+                        for taskchange in taskchangelist {
+                            for step in taskchange.stepchanges.clone() {
+                                match step {
+                                    ModuleBlockChange::AlreadyMatched(_) => {}
+                                    ModuleBlockChange::FailedToEvaluate(e) => {
+                                        finalstatus = AssignmentFinalStatus::FailedDryRun(e);
+                                        break;
+                                    }
+                                    ModuleBlockChange::ModuleApiCalls(apicalllist) => {
+                                        for apicall in apicalllist {
+                                            match apicall {
+                                                ModuleApiCall::None(_) => {}
+                                                _ => {
+                                                    finalstatus = AssignmentFinalStatus::Unset;
+                                                    break;
+                                                }
+                                            }
                                         }
+        
                                     }
                                 }
-
                             }
                         }
+                        self.finalstatus = finalstatus;
+                    }
+                    None => {}
+                }
+                self.changelist = changelist;
+                return Ok(());
+            }
+            Err(e) => {
+                match &e {
+                    Error::FailedTaskDryRun(message) => {
+                        self.finalstatus = AssignmentFinalStatus::FailedDryRun(message.clone());
+                        return Err(e);
+                    }
+                    _ => {
+                        return Err(e);
                     }
                 }
-                self.finalstatus = finalstatus;
             }
-            None => {}
         }
-        self.changelist = changelist;
+        
 
-        return Ok(());
+        
     }
     
     // TODO : allow direct run with this method

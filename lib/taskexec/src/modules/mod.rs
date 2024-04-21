@@ -9,6 +9,7 @@ use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::modules::blocks::*;
 use connection::prelude::*;
+use errors::Error;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all="lowercase")]
@@ -25,8 +26,9 @@ pub enum ModuleBlockExpectedState {
 impl ModuleBlockExpectedState {
     pub fn new() -> ModuleBlockExpectedState { ModuleBlockExpectedState::None }
 
-    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
-        match &self {
+    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> Result<ModuleBlockChange, Error> {
+        
+        let mbchange: ModuleBlockChange = match &self {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
 // **BEACON_3**
             ModuleBlockExpectedState::Command(block) => { block.dry_run_block(hosthandler, privilege) }
@@ -34,6 +36,11 @@ impl ModuleBlockExpectedState {
             ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Ping(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Yum(block) => { block.dry_run_block(hosthandler, privilege) }
+        };
+
+        match mbchange {
+            ModuleBlockChange::FailedToEvaluate(message) => { return Err(Error::FailedTaskDryRun(message)); }
+            _ => { return Ok(mbchange); }
         }
     }
 }
