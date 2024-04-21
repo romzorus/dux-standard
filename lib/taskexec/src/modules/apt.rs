@@ -1,7 +1,7 @@
 // APT Module : handle packages in Debian-like distributions
 
 use serde::Deserialize;
-use crate::workflow::change::{self, ModuleBlockChange};
+use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
