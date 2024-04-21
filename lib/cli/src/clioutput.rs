@@ -28,7 +28,6 @@ pub fn display_output(assignment: Assignment) {
         }
         AssignmentFinalStatus::FailedDryRun(error) => {
             println!("{}\n", error.red());
-            show_changelist(assignment.changelist);
             // TODO : show where it failed exactly in the TaskList
         }
         AssignmentFinalStatus::Changed => {
