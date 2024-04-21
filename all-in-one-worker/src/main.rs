@@ -90,7 +90,9 @@ fn main() {
                 let resultslist = &resultslist;
                 s.spawn(move |_| {
                     let _ = assignment.dry_run();
-                    assignment.apply();
+                    if let AssignmentFinalStatus::Unset = assignment.finalstatus {
+                            assignment.apply();
+                    }
                     resultslist.lock().unwrap().push(assignment);
                 });
             }
