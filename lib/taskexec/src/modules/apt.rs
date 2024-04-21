@@ -148,7 +148,7 @@ impl AptApiCall {
                     return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ApiCallStatus::ChangeFailed(
+                        ApiCallStatus::Failure(
                             format!("{} install failed", self.package.clone().unwrap())
                         )
                     );
@@ -170,7 +170,7 @@ impl AptApiCall {
                     return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ApiCallStatus::ChangeFailed(
+                        ApiCallStatus::Failure(
                             format!("{} removal failed", self.package.clone().unwrap())
                         )
                     );
@@ -191,7 +191,7 @@ impl AptApiCall {
                     return ApiCallResult::from(
                         Some(cmd_result.exitcode),
                         Some(cmd_result.stdout),
-                        ApiCallStatus::ChangeFailed(String::from("APT upgrade failed"))
+                        ApiCallStatus::Failure(String::from("APT upgrade failed"))
                     );
                 }
             }

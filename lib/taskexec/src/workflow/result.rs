@@ -119,5 +119,6 @@ pub enum ApiCallStatus {
     Unset,
     None,
     ChangeSuccessful(String),
-    ChangeFailed(String)
+    Failure(String),
+    AllowedFailure(String)
 }

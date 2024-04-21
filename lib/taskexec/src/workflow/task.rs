@@ -12,6 +12,7 @@ pub struct Step {
     pub name: Option<String>,
     pub run_as: Option<String>,
     pub with_sudo: Option<bool>,
+    pub allowed_to_fail: Option<bool>,
     // pub prelogic -> TODO
     // pub postlogic -> TODO
 
@@ -73,7 +74,9 @@ impl TaskBlock {
     }
 
     pub fn dry_run_task(&self, hosthandler: &mut HostHandler) -> Result<TaskChange, Error> {
-        let mut list: Vec<ModuleBlockChange> = Vec::new();
+        let mut mbchangeslist: Vec<ModuleBlockChange> = Vec::new();
+        let mut allowed_failures: Vec<bool> = Vec::new();
+
 
         // TODO : add some checking (with_sudo and run_as need to be mutually exclusive)
         for step in self.clone().steps.into_iter() {
@@ -95,9 +98,10 @@ impl TaskBlock {
                 }
             };
 
-            match step.moduleblock.unwrap().dry_run_moduleblock(hosthandler, privilege) {
-                Ok(moduleblockchange) => {
-                    list.push(moduleblockchange);
+            match step.moduleblock.unwrap().dry_run_moduleblock(hosthandler, privilege, step.allowed_to_fail.unwrap_or(false)) {
+                Ok((moduleblockchange, allowed_to_fail)) => {
+                    mbchangeslist.push(moduleblockchange);
+                    allowed_failures.push(allowed_to_fail);
                 }
                 Err(e) => {
                     return Err(e);
@@ -105,7 +109,7 @@ impl TaskBlock {
             }
         }
 
-        return Ok(TaskChange::from(list));
+        return Ok(TaskChange::from(mbchangeslist, allowed_failures));
     }
 }
 

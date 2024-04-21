@@ -26,7 +26,7 @@ pub enum ModuleBlockExpectedState {
 impl ModuleBlockExpectedState {
     pub fn new() -> ModuleBlockExpectedState { ModuleBlockExpectedState::None }
 
-    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> Result<ModuleBlockChange, Error> {
+    pub fn dry_run_moduleblock(&self, hosthandler: &mut HostHandler, privilege: Privilege, allowed_to_fail: bool) -> Result<(ModuleBlockChange, bool), Error> {
         
         let mbchange: ModuleBlockChange = match &self {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
@@ -39,8 +39,14 @@ impl ModuleBlockExpectedState {
         };
 
         match mbchange {
-            ModuleBlockChange::FailedToEvaluate(message) => { return Err(Error::FailedTaskDryRun(message)); }
-            _ => { return Ok(mbchange); }
+            ModuleBlockChange::FailedToEvaluate(message) => {
+                if allowed_to_fail {
+                    return Ok((ModuleBlockChange::AllowedFailure(message), allowed_to_fail));
+                } else {
+                    return Err(Error::FailedTaskDryRun(message));
+                }
+            }
+            _ => { return Ok((mbchange, allowed_to_fail)); }
         }
     }
 }

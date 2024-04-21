@@ -49,7 +49,7 @@ impl PingApiCall {
             return ApiCallResult::from(
                 Some(cmd_result.exitcode),
                 Some(cmd_result.stdout),
-                ApiCallStatus::ChangeFailed(
+                ApiCallStatus::Failure(
                     format!("Host unreachable through SSH")
                 )
             );

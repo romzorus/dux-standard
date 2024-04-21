@@ -92,7 +92,6 @@ impl Assignment {
                         for taskchange in taskchangelist {
                             for step in taskchange.stepchanges.clone() {
                                 match step {
-                                    ModuleBlockChange::AlreadyMatched(_) => {}
                                     ModuleBlockChange::FailedToEvaluate(e) => {
                                         finalstatus = AssignmentFinalStatus::FailedDryRun(e);
                                         break;
@@ -109,6 +108,7 @@ impl Assignment {
                                         }
         
                                     }
+                                    _ => {}
                                 }
                             }
                         }
@@ -152,8 +152,11 @@ impl Assignment {
         for taskresult in tasklistresult.taskresults.iter() {
             for stepresult in taskresult.stepresults.as_ref().unwrap().iter() {
                 for apicallresult in stepresult.apicallresults.iter() {
-                    if let ApiCallStatus::ChangeFailed(_) = apicallresult.status {
-                        finalstatus = AssignmentFinalStatus::FailedChange;
+
+                    match apicallresult.status {
+                        ApiCallStatus::Failure(_) => { finalstatus = AssignmentFinalStatus::FailedChange; }
+                        ApiCallStatus::AllowedFailure(_) => { finalstatus = AssignmentFinalStatus::ChangedWithFailures; }
+                        _ => {}
                     }
                 }
             }
@@ -174,5 +177,6 @@ pub enum AssignmentFinalStatus {
     AlreadyMatched,
     FailedDryRun(String),
     Changed,
+    ChangedWithFailures,
     FailedChange
 }

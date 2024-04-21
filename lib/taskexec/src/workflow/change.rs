@@ -1,11 +1,12 @@
 // This part is used to generate a ChangeList based on an Assignment.
 
-use crate::workflow::result::{ModuleBlockResult, TaskResult, TaskListResult, ApiCallResult};
+use crate::workflow::result::{ModuleBlockResult, TaskResult, TaskListResult, ApiCallResult, ApiCallStatus};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
 #[derive(Debug, Clone)]
 pub enum ModuleBlockChange {
+    AllowedFailure(String),
     AlreadyMatched(String),
     FailedToEvaluate(String), // The module can't work on this host (trying to use yum/dnf on Debian for example)
     ModuleApiCalls(Vec<ModuleApiCall>)
@@ -28,6 +29,7 @@ impl ModuleBlockChange {
     pub fn display(&self) -> Vec<String> {
 
         match self {
+            ModuleBlockChange::AllowedFailure(message) => { return Vec::from([message.clone()]); }
             ModuleBlockChange::AlreadyMatched(message) => { return Vec::from([message.clone()]); }
             ModuleBlockChange::FailedToEvaluate(message) => { return Vec::from([message.clone()]); }
             ModuleBlockChange::ModuleApiCalls(changeslist) => {
@@ -51,6 +53,7 @@ impl ModuleBlockChange {
     pub fn apply_moduleblockchange(&self, hosthandler: &mut HostHandler) -> ModuleBlockResult {
 
         match self {
+            ModuleBlockChange::AllowedFailure(_message) => { return ModuleBlockResult::none() }
             ModuleBlockChange::AlreadyMatched(_message) => { return ModuleBlockResult::none() }
             ModuleBlockChange::FailedToEvaluate(_message) => { return ModuleBlockResult::none() }
             ModuleBlockChange::ModuleApiCalls(changeslist) => {
@@ -63,7 +66,7 @@ impl ModuleBlockChange {
                         ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::Ping(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::YumDnf(block) => { block.apply_moduleblock_change(hosthandler) }
-                    };
+                    };                   
                     results.push(apicallresult);
                 }
                 return ModuleBlockResult::from(results);
@@ -74,19 +77,22 @@ impl ModuleBlockChange {
 
 #[derive(Debug, Clone)]
 pub struct TaskChange {
-    pub stepchanges: Vec<ModuleBlockChange>
+    pub stepchanges: Vec<ModuleBlockChange>,
+    pub allowed_failures: Vec<bool>
 }
 
 impl TaskChange {
     pub fn new() -> TaskChange {
         TaskChange {
-            stepchanges: Vec::new()
+            stepchanges: Vec::new(),
+            allowed_failures: Vec::new()
         }
     }
 
-    pub fn from(stepchanges: Vec<ModuleBlockChange>) -> TaskChange {
+    pub fn from(stepchanges: Vec<ModuleBlockChange>, allowed_failures: Vec<bool>) -> TaskChange {
         TaskChange {
-            stepchanges
+            stepchanges,
+            allowed_failures
         }
     }
 
@@ -94,11 +100,33 @@ impl TaskChange {
 
         let mut stepresults: Vec<ModuleBlockResult> = Vec::new();
 
-        for moduleblockchange in self.stepchanges.iter() {
-            let moduleblockresultlist = moduleblockchange.apply_moduleblockchange(hosthandler);
-            stepresults.push(moduleblockresultlist);
-        }
+        for (mbindex, moduleblockchange) in self.stepchanges.iter().enumerate() {
+            let mut moduleblockresultlist = moduleblockchange.apply_moduleblockchange(hosthandler);
 
+            // Change Failures into AllowedFailures before pushing to stepresults
+            // It is done at this level and not at module level so modules don't have to bother with upper level logic.
+            // We just want modules to return Failures when they fail, nothing more.
+            if self.allowed_failures[mbindex] {
+                for (index, apicallresult) in moduleblockresultlist.apicallresults.clone().iter().enumerate() {
+                    if let ApiCallStatus::Failure(message) = &apicallresult.status {
+                        moduleblockresultlist.apicallresults[index].status = ApiCallStatus::AllowedFailure(message.to_string());
+                    }
+                }
+                stepresults.push(moduleblockresultlist.clone());
+            } else {
+                stepresults.push(moduleblockresultlist.clone());
+                // If a failure is encountered in a step, stop the "apply" there.
+            if ! self.allowed_failures[mbindex] {
+                for apicallresult in moduleblockresultlist.apicallresults.into_iter() {
+                    if let ApiCallStatus::Failure(_) = apicallresult.status {
+                        return TaskResult::from(Some(stepresults));
+                    }
+                }
+            }
+            }
+
+
+        }
         return TaskResult::from(Some(stepresults));
     }
 }
