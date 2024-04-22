@@ -132,6 +132,9 @@ cd lib/taskexec/src/modules
 ```
 A `lineinfile.rs` file is created in `lib/taskexec/src/modules`. Now you only have to care about this file. The integration is done. It is a template in which you will find explanations and guidelines. When you are done with this file, just `cargo build` and try using your new module in a TaskList !
 
+## Want to talk about this project ?
+Open to suggestions, feedback, requests and any contribution ! Let's talk [here](https://discord.com/invite/2gxAW7uzsx) !
+
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
