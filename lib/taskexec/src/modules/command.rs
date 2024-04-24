@@ -61,7 +61,7 @@ impl CommandApiCall {
                 Some(cmd_result.exitcode),
                 Some(cmd_result.stdout),
                 ApiCallStatus::ChangeSuccessful(
-                    String::from("Command successfull")
+                    String::from("Command successful")
                 )
             );
         } else {
