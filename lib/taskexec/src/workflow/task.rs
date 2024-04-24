@@ -25,6 +25,7 @@ pub struct Step {
     // FIXME: Having an attribute per module is at the moment the only way found to be able to write "apt:" and not "!apt".
     // It needs a parsemodule() method to check that only one attribute per step is filled.
 // **BEACON_1**
+    pub lineinfile: Option<LineInFileBlockExpectedState>,
     pub command: Option<CommandBlockExpectedState>,
     pub apt: Option<AptBlockExpectedState>,
     pub dnf: Option<YumDnfBlockExpectedState>,
@@ -38,6 +39,7 @@ impl Step {
         let mut counter: u32 = 0; // Used to check that only one module is used per Step
 
 // **BEACON_2**
+        if let Some(content) = self.lineinfile.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::LineInFile(content)); }
         if let Some(content) = self.command.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Command(content)); }
         if let Some(content) = self.apt.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Apt(content)); }
         if let Some(content) = self.dnf.clone() { counter += 1; self.moduleblock = Some(ModuleBlockExpectedState::Dnf(content)); }

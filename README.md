@@ -88,6 +88,7 @@ Task : Prerequisites
 | `apt` | Manage packages on Debian-like distributions |
 | `command` | Run a single shell command on the controlled host |
 | `dnf` | Manage packages on Fedora-like distributions (no difference with `yum`) |
+| `lineinfile` | Manipulate lines in a file (add, delete) |
 | `ping` | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
 

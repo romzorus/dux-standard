@@ -38,6 +38,7 @@ impl ModuleBlockChange {
                     let apicalldisplay = match change {
                         ModuleApiCall::None(message) => { message.clone() }
 // **BEACON_1**
+                        ModuleApiCall::LineInFile(block) => { block.display() }
                         ModuleApiCall::Command(block) => { block.display() }
                         ModuleApiCall::Apt(block) => { block.display() }
                         ModuleApiCall::Ping(block) => { block.display() }
@@ -62,6 +63,7 @@ impl ModuleBlockChange {
                     let apicallresult = match change {
                         ModuleApiCall::None(_) => { ApiCallResult::none() }
 // **BEACON_2**
+                        ModuleApiCall::LineInFile(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::Command(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::Apt(block) => { block.apply_moduleblock_change(hosthandler) }
                         ModuleApiCall::Ping(block) => { block.apply_moduleblock_change(hosthandler) }

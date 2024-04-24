@@ -1,5 +1,8 @@
 // **BEACON**
 
+pub use crate::modules::lineinfile::LineInFileBlockExpectedState;
+pub use crate::modules::lineinfile::LineInFileApiCall;
+
 pub use crate::modules::command::CommandBlockExpectedState;
 pub use crate::modules::command::CommandApiCall;
 

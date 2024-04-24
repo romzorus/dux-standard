@@ -1,4 +1,5 @@
 // **BEACON_1**
+pub mod lineinfile;
 pub mod command;
 pub mod blocks;
 pub mod apt;
@@ -16,6 +17,7 @@ use errors::Error;
 pub enum ModuleBlockExpectedState {
     None, // Used for new() methods, initializations and errors
 // **BEACON_2**
+    LineInFile(LineInFileBlockExpectedState),
     Command(CommandBlockExpectedState),
     Apt(AptBlockExpectedState),
     Dnf(YumDnfBlockExpectedState),
@@ -31,6 +33,7 @@ impl ModuleBlockExpectedState {
         let mbchange: ModuleBlockChange = match &self {
             ModuleBlockExpectedState::None => { ModuleBlockChange::matched("none") }
 // **BEACON_3**
+            ModuleBlockExpectedState::LineInFile(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Command(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Apt(block) => { block.dry_run_block(hosthandler, privilege) }
             ModuleBlockExpectedState::Dnf(block) => { block.dry_run_block(hosthandler, privilege) }
@@ -55,6 +58,7 @@ impl ModuleBlockExpectedState {
 pub enum ModuleApiCall {
     None(String),
 // **BEACON_4**
+    LineInFile(LineInFileApiCall),
     Command(CommandApiCall),
     Apt(AptApiCall),
     Ping(PingApiCall),
