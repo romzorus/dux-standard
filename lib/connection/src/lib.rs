@@ -75,7 +75,7 @@ trait HostHandling {
     fn put_file(); // Upload a file to the host
     fn get_file(); // Download a file from the host
 }
-
+#[derive(Debug)]
 pub struct CmdResult {
     pub exitcode: i32,
     pub stdout: String
