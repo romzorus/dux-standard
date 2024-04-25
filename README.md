@@ -1,14 +1,22 @@
-# Dux : a scalable and cloud-friendly automation tool
+# Dux : a scalable and cloud-friendly automation tool written in Rust
 <div align="center">
-<img src="img/dux.png " width="25%">
+<img src="img/dux.png" width="25%">
 </div>
 
 # Our goal
-Build a scalable automation / orchestration tool (something that runs a task on a remote host basically) ready to handle a massive amount of remote hosts in parallel. To increase the number of remote hosts you can handle in parallel, just increase the number of worker nodes or their capacity.
+Build a scalable automation tool ready to handle a massive amount of remote hosts in parallel.
+It comes in 2 versions :
+- scalable version : 3 components (Master Node / Message Broker / Worker Node)
+- all-in-one version : 1 executable which does everything
 
-A worker node can be either a physical/virtual machine or a container.
+# Scalable version
+**Overview**
+<div align="center">
+<img src="scalable-version/scalable-illustration.png" width="100%">
+</div>
+A worker node can be either a physical/virtual machine or a container. To increase the capacity of the system, just increase the number of worker nodes or their ability to multithread (number of CPU cores basically). 
 
-# All-in-one dux tool
+# All-in-one version
 
 **Usage** : ```dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key> -u <username>```
 
@@ -92,7 +100,7 @@ Task : Prerequisites
 | `ping` | Test SSH connectivity with remote host |
 | `yum` | Manage packages on Fedora-like distributions (no difference with `dnf`) |
 
-# Have a remote host handled by Dux
+# Have a remote host handled by Dux all-in-one version
 
 ## On controlled host
 As for other automation tools, Dux needs an account to use on the controlled host. Let's create a `dux` user on the controlled host and give it some privileges :
