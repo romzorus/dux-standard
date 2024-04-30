@@ -50,7 +50,17 @@ impl HostHandler {
             ConnectionMode::Unset => { return Err(Error::MissingInitialization); }
             ConnectionMode::LocalHost => { return Ok(()); } // Nothing to initialize when working on localhost
             ConnectionMode::Ssh2 => { self.ssh2.init() }
-            // ConnectionMode::Ssh3 => { self.ssh2.unwrap().init() }
+            // ConnectionMode::Ssh3 => { self.ssh3.unwrap().init() }
+        }
+    }
+
+    // Use this to check if a command is available on remote host
+    pub fn is_this_cmd_available(&mut self, cmd: &str) -> Result<bool, Error> {
+        match self.connectionmode {
+            ConnectionMode::Unset => { return Err(Error::MissingInitialization); }
+            ConnectionMode::LocalHost => { return Ok(true); } // TODO
+            ConnectionMode::Ssh2 => { self.ssh2.is_this_cmd_available(cmd) }
+            // ConnectionMode::Ssh3 => { self.ssh3.unwrap().is_this_cmd_available() }
         }
     }
     

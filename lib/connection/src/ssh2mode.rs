@@ -81,6 +81,25 @@ impl Ssh2HostHandler {
             }
         }
     }
+
+    pub fn is_this_cmd_available(&self, cmd: &str) -> Result<bool, Error> {
+
+        let check_cmd_content = format!("command -v {}", cmd);
+        let check_cmd_result = self.run_cmd(check_cmd_content.as_str());
+
+        match check_cmd_result {
+            Ok(cmd_result) => {
+                if cmd_result.exitcode == 0 {
+                    return Ok(true);
+                } else {
+                    return Ok(false);
+                }
+            }
+            Err(e) => {
+                return Err(Error::FailureToRunCommand(format!("{:?}", e)));
+            }
+        }
+    }
     
     pub fn run_cmd(&self, cmd: &str) -> Result<CmdResult, Error> {
         assert!(self.authmode != Ssh2AuthMode::Unset, "Can't run command on remote host : authentication unset");
