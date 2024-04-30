@@ -80,8 +80,8 @@ impl HostHandler {
 trait HostHandling {
     fn new() -> Self; // Create new instance of the handler
     fn init() -> Result<(), Error> where Self:Sized; // Initialize the handler (when needed)
+    fn is_this_cmd_available() -> Result<bool, Error>;
     fn run_cmd(); // Run a shell command on the host
-    fn run_cmd_with_bkp(); // Run a shell command on the host, with an alternative command in case the first one fails
     fn put_file(); // Upload a file to the host
     fn get_file(); // Download a file from the host
 }
