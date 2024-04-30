@@ -3,6 +3,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
@@ -13,8 +14,8 @@ pub struct AptBlockExpectedState {
     upgrade: Option<bool>
 }
 
-impl AptBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
+impl DryRun for AptBlockExpectedState {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         if ! is_apt_working(hosthandler, privilege.clone()) {
@@ -103,9 +104,9 @@ pub struct AptApiCall {
     privilege: Privilege
 }
 
-impl AptApiCall {
+impl Apply for AptApiCall {
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         match self.action.as_str() {
             "install" => {
                 return format!("Install - {}", self.package.clone().unwrap());
@@ -120,15 +121,7 @@ impl AptApiCall {
         }
     }
 
-    pub fn from(action: &str, package: Option<String>, privilege: Privilege) -> AptApiCall {
-        AptApiCall {
-            action: action.to_string(),
-            package,
-            privilege
-        }
-    }
-
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
+    fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         match self.action.as_str() {
@@ -196,6 +189,16 @@ impl AptApiCall {
                 }
             }
             _ => { return ApiCallResult::none(); }
+        }
+    }
+}
+
+impl AptApiCall {
+    pub fn from(action: &str, package: Option<String>, privilege: Privilege) -> AptApiCall {
+        AptApiCall {
+            action: action.to_string(),
+            package,
+            privilege
         }
     }
 }

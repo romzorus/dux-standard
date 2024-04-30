@@ -3,6 +3,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
@@ -20,8 +21,8 @@ pub struct LineInFileBlockExpectedState {
     // with: Option<String> // ... with this one.
 }
 
-impl LineInFileBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
+impl DryRun for LineInFileBlockExpectedState {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let mut changes: Vec<ModuleApiCall> = Vec::new();
@@ -195,9 +196,9 @@ pub struct LineInFileApiCall {
     privilege: Privilege
 }
 
-impl LineInFileApiCall {
+impl Apply for LineInFileApiCall {
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         match self.action.as_str() {
             "add" => {
                 return String::from("Line missing -> needs to be added");
@@ -209,7 +210,7 @@ impl LineInFileApiCall {
         }
     }
 
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
+    fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         match self.action.as_str() {

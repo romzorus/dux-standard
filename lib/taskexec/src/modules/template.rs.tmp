@@ -3,6 +3,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
@@ -13,7 +14,7 @@ pub struct **ModuleName**BlockExpectedState {
     // upgrade: Option<bool>
 }
 
-impl **ModuleName**BlockExpectedState {
+impl DryRun for **ModuleName**BlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
@@ -33,7 +34,7 @@ pub struct **ModuleName**ApiCall {
     // privilege: Privilege
 }
 
-impl **ModuleName**ApiCall {
+impl Apply for **ModuleName**ApiCall {
 
     pub fn display(&self) -> String {
         return String::from("Template");

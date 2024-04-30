@@ -2,6 +2,7 @@
 
 use crate::workflow::result::{ModuleBlockResult, TaskResult, TaskListResult, ApiCallResult, ApiCallStatus};
 use crate::modules::ModuleApiCall;
+use crate::modules::{DryRun, Apply};
 use connection::prelude::*;
 
 #[derive(Debug, Clone)]

@@ -3,6 +3,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
@@ -14,8 +15,8 @@ pub struct YumDnfBlockExpectedState {
 }
 
 #[allow(unused_assignments)] // 'tool' is never actually read, only borrowed
-impl YumDnfBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
+impl DryRun for YumDnfBlockExpectedState {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let mut tool = String::new();
@@ -109,9 +110,9 @@ pub struct YumDnfApiCall {
     privilege: Privilege
 }
 
-impl YumDnfApiCall {
+impl Apply for YumDnfApiCall {
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         match self.action.as_str() {
             "install" => {
                 return format!("Install - {}", self.package.clone().unwrap());
@@ -126,16 +127,7 @@ impl YumDnfApiCall {
         }
     }
 
-    pub fn from(action: &str, tool: &String, package: Option<String>, privilege: Privilege) -> YumDnfApiCall {
-        YumDnfApiCall {
-            action: action.to_string(),
-            tool: tool.clone(),
-            package,
-            privilege
-        }
-    }
-
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
+    fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         match self.action.as_str() {
@@ -203,6 +195,17 @@ impl YumDnfApiCall {
                     }
             }
             _ => { return ApiCallResult::none(); }
+        }
+    }
+}
+
+impl YumDnfApiCall {
+    pub fn from(action: &str, tool: &String, package: Option<String>, privilege: Privilege) -> YumDnfApiCall {
+        YumDnfApiCall {
+            action: action.to_string(),
+            tool: tool.clone(),
+            package,
+            privilege
         }
     }
 }

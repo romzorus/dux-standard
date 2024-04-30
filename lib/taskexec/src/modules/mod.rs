@@ -8,6 +8,7 @@ pub mod yumdnf;
 
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
+use crate::workflow::result::ApiCallResult;
 use crate::modules::blocks::*;
 use connection::prelude::*;
 use errors::Error;
@@ -63,4 +64,13 @@ pub enum ModuleApiCall {
     Apt(AptApiCall),
     Ping(PingApiCall),
     YumDnf(YumDnfApiCall)
+}
+
+pub trait DryRun {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange;
+}
+
+pub trait Apply {
+    fn display(&self) -> String;
+    fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult;
 }

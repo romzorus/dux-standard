@@ -3,13 +3,14 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::ApiCallResult;
+use crate::modules::{DryRun, Apply};
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct PingBlockExpectedState {}
 
-impl PingBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
+impl DryRun for PingBlockExpectedState {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let cmd = String::from("DEBIAN_FRONTEND=noninteractive id");
@@ -28,13 +29,13 @@ pub struct PingApiCall {
     privilege: Privilege
 }
 
-impl PingApiCall {
+impl Apply for PingApiCall {
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         return format!("Check SSH connectivity with remote host");
     }
 
-    pub fn apply_moduleblock_change(&self, _hosthandler: &mut HostHandler) -> ApiCallResult {
+    fn apply_moduleblock_change(&self, _hosthandler: &mut HostHandler) -> ApiCallResult {
         return ApiCallResult::none();
     }
 }

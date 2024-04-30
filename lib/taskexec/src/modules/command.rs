@@ -3,6 +3,7 @@
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
+use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
@@ -11,8 +12,8 @@ pub struct CommandBlockExpectedState {
     content: Option<String>,
 }
 
-impl CommandBlockExpectedState {
-    pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
+impl DryRun for CommandBlockExpectedState {
+    fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let mut changes: Vec<ModuleApiCall> = Vec::new();
@@ -45,13 +46,13 @@ pub struct CommandApiCall {
     privilege: Privilege
 }
 
-impl CommandApiCall {
+impl Apply for CommandApiCall {
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         return format!("Run command : {}", self.cmd);
     }
 
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
+    fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
         let cmd_result = hosthandler.run_cmd(self.cmd.as_str(), self.privilege.clone()).unwrap();
