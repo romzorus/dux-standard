@@ -2,8 +2,7 @@
 
 use serde::Deserialize;
 use crate::workflow::change::ModuleBlockChange;
-use crate::workflow::result::{ApiCallResult, ApiCallStatus};
-use crate::modules::ModuleApiCall;
+use crate::workflow::result::ApiCallResult;
 use connection::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -13,10 +12,14 @@ impl PingBlockExpectedState {
     pub fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
-        return ModuleBlockChange::changes(
-            vec![ModuleApiCall::Ping(PingApiCall{privilege})]
-        );
+        let cmd = String::from("DEBIAN_FRONTEND=noninteractive id");
+        let cmd_result = hosthandler.run_cmd(cmd.as_str(), privilege).unwrap();
 
+        if cmd_result.exitcode == 0 {
+            return ModuleBlockChange::AlreadyMatched("Host reachable".to_string());
+        } else {
+            return ModuleBlockChange::FailedToEvaluate("Host unreachable".to_string());
+        }
     }
 }
 
@@ -31,29 +34,7 @@ impl PingApiCall {
         return format!("Check SSH connectivity with remote host");
     }
 
-    pub fn apply_moduleblock_change(&self, hosthandler: &mut HostHandler) -> ApiCallResult {
-        assert!(hosthandler.ssh2.sshsession.authenticated());
-
-        let cmd = String::from("DEBIAN_FRONTEND=noninteractive id");
-        let cmd_result = hosthandler.run_cmd(cmd.as_str(), self.privilege.clone()).unwrap();
-        
-        if cmd_result.exitcode == 0 {
-            return ApiCallResult::from(
-                Some(cmd_result.exitcode),
-                Some(cmd_result.stdout),
-                ApiCallStatus::ChangeSuccessful(
-                    format!("Host reachable through SSH")
-                )
-            );
-        } else {
-            return ApiCallResult::from(
-                Some(cmd_result.exitcode),
-                Some(cmd_result.stdout),
-                ApiCallStatus::Failure(
-                    format!("Host unreachable through SSH")
-                )
-            );
-        }
-        
+    pub fn apply_moduleblock_change(&self, _hosthandler: &mut HostHandler) -> ApiCallResult {
+        return ApiCallResult::none();
     }
 }
