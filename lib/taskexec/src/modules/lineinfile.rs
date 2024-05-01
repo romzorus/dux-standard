@@ -1,13 +1,13 @@
 // LineInFile module : manipulate lines in a file (add, delete)
 
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
 use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LineInFileBlockExpectedState {
     filepath: String,
     line: Option<String>,
@@ -186,7 +186,7 @@ impl DryRun for LineInFileBlockExpectedState {
 
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LineInFileApiCall {
     path: String,
     line: String,

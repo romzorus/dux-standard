@@ -5,13 +5,16 @@ use crate::workflow::task::TaskList;
 use crate::workflow::result::{ApiCallStatus, TaskListResult};
 use connection::prelude::*;
 use errors::Error;
+use serde::{Serialize, Deserialize};
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
-    pub host: String, // Will disappear soon, fully replaced by hosthandler
-    pub hosthandler: HostHandler,
+    pub host: String,
+    pub connectionmode: ConnectionMode,
+    pub authmode: Ssh2AuthMode,
+    // pub hosthandler: HostHandler,
     pub tasklist: TaskList,
     pub changelist: ChangeList,
     pub tasklistresult: TaskListResult,
@@ -24,7 +27,9 @@ impl Assignment {
             correlationid,
             runningmode: RunningMode::DryRun, // DryRun is default running mode
             host: String::from(""),
-            hosthandler: HostHandler::new(),
+            connectionmode: ConnectionMode::Unset,
+            authmode: Ssh2AuthMode::Unset,
+            // hosthandler: HostHandler::new(),
             tasklist: TaskList::new(),
             changelist: ChangeList::new(),
             tasklistresult: TaskListResult::new(),
@@ -36,7 +41,9 @@ impl Assignment {
         correlationid: String,
         runningmode: RunningMode,
         host: String,
-        hosthandler: HostHandler,
+        connectionmode: ConnectionMode,
+        authmode: Ssh2AuthMode,
+        // hosthandler: HostHandler,
         tasklist: TaskList,
         changelist: ChangeList,
         tasklistresult: TaskListResult,
@@ -47,7 +54,9 @@ impl Assignment {
                 correlationid,
                 runningmode,
                 host,
-                hosthandler,
+                connectionmode,
+                authmode,
+                // hosthandler,
                 tasklist,
                 changelist,
                 tasklistresult,
@@ -55,36 +64,9 @@ impl Assignment {
             }
     }
 
-    pub fn dry_run(&mut self) -> Result<(), Error> {
-
-        // TODO : turn all this connection initialization into an Assignment's method
-        match &self.hosthandler.connectionmode {
-            ConnectionMode::Unset => {} // TODO : return some error
-            ConnectionMode::LocalHost => {} // Nothing to initialize if working on the localhost
-            ConnectionMode::Ssh2 => {
-                match self.hosthandler.ssh2.authmode.clone() {
-                    Ssh2AuthMode::Unset => {} // TODO : return some error, missing auth mode
-                    Ssh2AuthMode::UsernamePassword(_credentials) => {} // TODO : handle connection with username/password
-                    Ssh2AuthMode::SshKeys((username, privatekeypath)) => {
-                        self.hosthandler = HostHandler::from(ConnectionMode::Ssh2, self.hosthandler.hostaddress.clone());
-                        self.hosthandler.ssh2auth(Ssh2AuthMode::SshKeys((username.clone(), privatekeypath.to_path_buf())));
-                    }
-                    Ssh2AuthMode::SshAgent(_agentname) => {} // TODO : handle connection with agent
-                }
-
-                match self.hosthandler.init() {
-                    Ok(_) => {}
-                    Err(e) => {
-                        self.changelist.taskchanges = None;
-                        self.finalstatus = AssignmentFinalStatus::FailedDryRun(format!("{:?}", e));
-                        return Err(Error::FailedInitialization(format!("{:?}", e)));
-                    }
-                }
-
-            }
-        }
+    pub fn dry_run(&mut self, hosthandler: &mut HostHandler) -> Result<(), Error> {
         
-        match self.tasklist.dry_run_tasklist(self.correlationid.clone(), &mut self.hosthandler) {
+        match self.tasklist.dry_run_tasklist(self.correlationid.clone(), hosthandler) {
             Ok(changelist) => {
                 match &changelist.taskchanges {
                     Some(taskchangelist) => {
@@ -137,11 +119,11 @@ impl Assignment {
     }
     
     // TODO : allow direct run with this method
-    pub fn apply(&mut self) {
+    pub fn apply(&mut self, hosthandler: &mut HostHandler) {
         assert_eq!(self.runningmode, RunningMode::Apply);
         assert_eq!(self.finalstatus, AssignmentFinalStatus::Unset);
 
-        let tasklistresult = self.changelist.apply_changelist(&mut self.hosthandler);
+        let tasklistresult = self.changelist.apply_changelist(hosthandler);
         // "Save" the results
         self.tasklistresult = tasklistresult.clone();
 
@@ -165,13 +147,13 @@ impl Assignment {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub enum RunningMode {
     DryRun, // Only check what needs to be done to match the expected situation
     Apply   // Actually apply the changes required to match the expected situation
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub enum AssignmentFinalStatus {
     Unset,
     AlreadyMatched,

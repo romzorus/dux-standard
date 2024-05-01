@@ -1,6 +1,8 @@
 // This part is used to define the result structure.
 
-#[derive(Debug, Clone)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiCallResult {
     pub exitcode: Option<i32>,
     pub output: Option<String>,
@@ -33,7 +35,7 @@ impl ApiCallResult {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModuleBlockResult {
     pub apicallresults: Vec<ApiCallResult>
 }
@@ -58,7 +60,7 @@ impl ModuleBlockResult {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskResult {
     pub stepresults: Option<Vec<ModuleBlockResult>>
 }
@@ -83,7 +85,7 @@ impl TaskResult {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskListResult {
     pub taskresults: Vec<TaskResult>,
 }
@@ -114,7 +116,7 @@ impl TaskListResult {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ApiCallStatus {
     Unset,
     None,

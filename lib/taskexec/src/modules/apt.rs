@@ -1,13 +1,13 @@
 // APT Module : handle packages in Debian-like distributions
 
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
 use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AptBlockExpectedState {
     state: Option<String>,
     package: Option<String>,
@@ -97,7 +97,7 @@ impl DryRun for AptBlockExpectedState {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AptApiCall {
     action: String,
     package: Option<String>,

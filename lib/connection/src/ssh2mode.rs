@@ -3,8 +3,8 @@ use ssh2::Session;
 use std::net::TcpStream;
 use errors::Error;
 use std::io::Read;
-
 use crate::CmdResult;
+use serde::{Serialize, Deserialize};
 
 #[derive(Clone)]
 pub struct Ssh2HostHandler {
@@ -120,7 +120,7 @@ impl Ssh2HostHandler {
 }
 
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Ssh2AuthMode {
     Unset,
     UsernamePassword(Credentials),
@@ -128,7 +128,7 @@ pub enum Ssh2AuthMode {
     SshAgent(String)    // Name of SSH agent
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Credentials {
     username: String,
     password: String

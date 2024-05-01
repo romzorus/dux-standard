@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 use errors::Error;
 use crate::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
@@ -6,7 +6,7 @@ use crate::ssh2mode::{Ssh2AuthMode, Ssh2HostHandler};
 pub mod prelude;
 pub mod ssh2mode;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ConnectionMode {
     Unset,
     LocalHost,
@@ -32,11 +32,11 @@ impl HostHandler {
         }
     }
 
-    pub fn from(connectionmode: ConnectionMode, hostaddress: String) -> HostHandler {
+    pub fn from(connectionmode: ConnectionMode, hostaddress: String, authmode: Ssh2AuthMode) -> HostHandler {
         HostHandler {
             connectionmode,
             hostaddress: hostaddress.clone(),
-            ssh2: Ssh2HostHandler::from(hostaddress, Ssh2AuthMode::Unset),
+            ssh2: Ssh2HostHandler::from(hostaddress, authmode),
             // ssh3: ...
         }
     }
@@ -117,7 +117,7 @@ fn final_cmd(cmd: String, privilege: Privilege) -> String {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Privilege {
     Usual,              // Run cmd as the current authenticated user
     WithSudo,           // Run cmd with sudo

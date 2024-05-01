@@ -6,7 +6,7 @@ pub mod apt;
 pub mod ping;
 pub mod yumdnf;
 
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::ApiCallResult;
 use crate::modules::blocks::*;
@@ -55,7 +55,7 @@ impl ModuleBlockExpectedState {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ModuleApiCall {
     None(String),
 // **BEACON_4**

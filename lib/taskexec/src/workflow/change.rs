@@ -4,8 +4,9 @@ use crate::workflow::result::{ModuleBlockResult, TaskResult, TaskListResult, Api
 use crate::modules::ModuleApiCall;
 use crate::modules::{DryRun, Apply};
 use connection::prelude::*;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ModuleBlockChange {
     AllowedFailure(String),
     AlreadyMatched(String),
@@ -78,7 +79,7 @@ impl ModuleBlockChange {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskChange {
     pub stepchanges: Vec<ModuleBlockChange>,
     pub allowed_failures: Vec<bool>
@@ -135,24 +136,24 @@ impl TaskChange {
 }
 
 #[allow(dead_code)]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ChangeList {
     pub taskchanges: Option<Vec<TaskChange>>,
-    hosthandler: HostHandler,
+    // hosthandler: HostHandler,
 }
 
 impl ChangeList {
     pub fn new() -> ChangeList {
         ChangeList {
             taskchanges: Some(Vec::new()),
-            hosthandler: HostHandler::new(),
+            // hosthandler: HostHandler::new(),
         }
     }
 
     pub fn from(taskchanges: Option<Vec<TaskChange>>, hosthandler: HostHandler) -> ChangeList {
         ChangeList {
             taskchanges,
-            hosthandler,
+            // hosthandler,
         }
     }
 

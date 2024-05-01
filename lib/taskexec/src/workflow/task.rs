@@ -1,5 +1,5 @@
 // This part is used to generate a TaskList based on the user input.
-use serde::{Deserialize, Deserializer};
+use serde::{Serialize, Deserialize, Deserializer};
 use crate::modules::ModuleBlockExpectedState;
 use crate::modules::blocks::*;
 use crate::workflow::change::{ChangeList, ModuleBlockChange, TaskChange};
@@ -7,7 +7,7 @@ use connection::prelude::*;
 use errors::Error;
 
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Step {
     pub name: Option<String>,
     pub run_as: Option<String>,
@@ -51,7 +51,7 @@ impl Step {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskBlock {
     pub name: Option<String>,
     pub steps: Vec<Step>,
@@ -115,7 +115,7 @@ impl TaskBlock {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskList {
     pub tasks: Vec<TaskBlock>,
 }

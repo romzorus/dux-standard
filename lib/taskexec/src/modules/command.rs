@@ -1,13 +1,13 @@
 // Command module : <short description>
 
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use crate::workflow::change::ModuleBlockChange;
 use crate::workflow::result::{ApiCallResult, ApiCallStatus};
 use crate::modules::{DryRun, Apply};
 use crate::modules::ModuleApiCall;
 use connection::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CommandBlockExpectedState {
     content: Option<String>,
 }
@@ -40,7 +40,7 @@ impl DryRun for CommandBlockExpectedState {
 
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CommandApiCall {
     cmd: String,
     privilege: Privilege
