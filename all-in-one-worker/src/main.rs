@@ -1,7 +1,7 @@
 use cli::prelude::*;
 use connection::prelude::*;
 use hostparser::*;
-use std::{path::PathBuf, sync::Mutex};
+use std::{path::PathBuf, process::exit, sync::Mutex};
 use taskexec::prelude::*;
 use taskparser::prelude::*;
 
@@ -31,39 +31,34 @@ fn main() {
 
     for host in hostlist_get_all_hosts(&hostlist).unwrap() {
 
-        let mut hosthandler = HostHandler::from(ConnectionMode::Ssh2, host.clone());
-
-        match &cliargs.key {
+        let authmode = match &cliargs.key {
             Some(privatekeypath) => {
-                hosthandler.ssh2auth(
-                    Ssh2AuthMode::SshKeys((
-                        cliargs.user.clone(),
-                        PathBuf::from(privatekeypath)
-                    ))
-                );
+                Ssh2AuthMode::SshKeys((
+                    cliargs.user.clone(),
+                    PathBuf::from(privatekeypath)
+                ))
             }
             None => {
                 // No SSH key given as argument, trying with password if it is given
                 match cliargs.password.clone() {
                     Some(pwd) => {
-                        hosthandler.ssh2auth(
-                            Ssh2AuthMode::UsernamePassword(
-                                Credentials::from(cliargs.user.clone(), pwd)
-                            )
-                        );
+                        Ssh2AuthMode::UsernamePassword(
+                            Credentials::from(cliargs.user.clone(), pwd)
+                        )
                     }
                     None => {
-                        println!("No SSH key or password to connect to remote host.")
+                        panic!("No SSH key or password to connect to remote host."); // TODO : gracefully quit instead of panic
                     }
                 }
             }
-        }
+        };
         
         assignmentlist.push(Assignment::from(
             correlationid.get_new_value().unwrap(),
             RunningMode::Apply,
             host.clone(),
-            hosthandler,
+            ConnectionMode::Ssh2,
+            authmode,
             tasklist.clone(),
             ChangeList::new(),
             TaskListResult::new(),
@@ -89,9 +84,18 @@ fn main() {
             for mut assignment in assignmentlist.into_iter() {
                 let resultslist = &resultslist;
                 s.spawn(move |_| {
-                    let _ = assignment.dry_run();
+
+                    let mut hosthandler = HostHandler::from(
+                        assignment.connectionmode.clone(),
+                        assignment.host.clone(),
+                        assignment.authmode.clone()
+                    );
+
+                    let _ = hosthandler.init();
+
+                    let _ = assignment.dry_run(&mut hosthandler);
                     if let AssignmentFinalStatus::Unset = assignment.finalstatus {
-                            assignment.apply();
+                            assignment.apply(&mut hosthandler);
                     }
                     resultslist.lock().unwrap().push(assignment);
                 });
