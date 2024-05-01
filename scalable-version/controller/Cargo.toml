@@ -6,3 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+taskexec = { path = "../../lib/taskexec" }
+taskparser = { path = "../../lib/taskparser" }
+cli = { path = "../../lib/cli" }
+hostparser = { path = "../../lib/hostparser" }
+connection = { path = "../../lib/connection" }
