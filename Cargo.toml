@@ -6,5 +6,7 @@ members = [
 	"all-in-one-worker",
 	"lib/hostparser",
 	"lib/connection",
-	"lib/errors"
+	"lib/errors",
+	"scalable-version/controller",
+	"scalable-version/worker"
 ]
