@@ -136,7 +136,7 @@ impl TaskChange {
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChangeList {
     pub taskchanges: Option<Vec<TaskChange>>,
     // hosthandler: HostHandler,

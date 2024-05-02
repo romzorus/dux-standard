@@ -7,7 +7,7 @@ use connection::prelude::*;
 use errors::Error;
 use serde::{Serialize, Deserialize};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assignment {
     pub correlationid: String,
     pub runningmode: RunningMode,
