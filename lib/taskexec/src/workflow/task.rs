@@ -16,10 +16,9 @@ pub struct Step {
     // pub prelogic -> TODO
     // pub postlogic -> TODO
 
-    // This attribute is skipped by serde because it is not defined by the user in the TaskList. It is filled by the
-    // .parsemodule() method based on the rest of the attributes (one per module). After applying this method, the
-    // moduleblock attribute holds the Expected State ready to be used by the rest of the workflow.
-    #[serde(skip)]
+    // This attribute is filled by the .parsemodule() method based on the rest of
+    // the attributes (one per module). After applying this method, the moduleblock
+    // attribute holds the Expected State ready to be used by the rest of the workflow.
     moduleblock: Option<ModuleBlockExpectedState>,
 
     // FIXME: Having an attribute per module is at the moment the only way found to be able to write "apt:" and not "!apt".
