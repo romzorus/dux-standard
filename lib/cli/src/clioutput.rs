@@ -15,6 +15,36 @@ pub fn welcome_message() {
 ");
 }
 
+pub fn welcome_message_controller() {
+
+    println!(r"
+    ██████╗ ██╗   ██╗██╗  ██╗
+    ██╔══██╗██║   ██║╚═███╔═╝
+    ██║  ██║██║   ██║  ███║ 
+    ██████╔╝╚██████╔╝██╔╝ ██╗
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+█▀▀ █▀█ █▄ █ ▀█▀ █▀█ █▀█ █   █   █▀▀ █▀█
+█▄▄ █▄█ █ ▀█  █  █▀▄ █▄█ █▄▄ █▄▄ ██▄ █▀▄
+");
+}
+
+
+
+
+pub fn welcome_message_worker() {
+
+    println!(r"
+    ██████╗ ██╗   ██╗██╗  ██╗
+    ██╔══██╗██║   ██║╚═███╔═╝
+    ██║  ██║██║   ██║  ███║ 
+    ██████╔╝╚██████╔╝██╔╝ ██╗
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝ 
+    █ █ █ █▀█ █▀█ █▄▀ █▀▀ █▀█
+    ▀▄▀▄▀ █▄█ █▀▄ █ █ ██▄ █▀▄                                  
+");
+}
+
+// TODO : have this work with an &Assignment instead of an Assignment
 pub fn display_output(assignment: Assignment) {
 
     println!("Host {} : {}", assignment.host.bold(), output_nice_finalstatus(&assignment.finalstatus));
