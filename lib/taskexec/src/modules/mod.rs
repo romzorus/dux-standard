@@ -13,7 +13,7 @@ use crate::modules::blocks::*;
 use connection::prelude::*;
 use errors::Error;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all="lowercase")]
 pub enum ModuleBlockExpectedState {
     None, // Used for new() methods, initializations and errors
