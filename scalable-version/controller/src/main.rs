@@ -15,22 +15,21 @@ use std::path::PathBuf;
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
     channel::{
-         BasicPublishArguments, QueueBindArguments, QueueDeclareArguments,
+        BasicConsumeArguments, BasicPublishArguments, QueueBindArguments, QueueDeclareArguments, BasicGetArguments,
     },
     connection::{Connection, OpenConnectionArguments},
-    
+    consumer::DefaultConsumer,
     BasicProperties,
 };
-
+use tokio::time::Duration;
 use tracing_subscriber::{fmt, prelude::*};
 use tracing_subscriber::filter::EnvFilter;
-use serde::Serialize;
 
 #[tokio::main]
 async fn main() {
-    welcome_message();
-    println!("[Dux controller]"); // TODO : have a nice display for this also
-    println!("");
+    welcome_message_controller();
+    // println!("[Dux controller]"); // TODO : have a nice display for this also
+    // println!("");
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
@@ -51,6 +50,7 @@ async fn main() {
     correlationid.init();
     //  -> Actual build of Assignments
     let mut assignmentlist: Vec<Assignment> = Vec::new();
+    let mut correlationidlist: Vec<String> = Vec::new();
 
     for host in hostlist_get_all_hosts(&hostlist).unwrap() {
 
@@ -75,9 +75,12 @@ async fn main() {
                 }
             }
         };
+
+        let correlationid = correlationid.get_new_value().unwrap();
+        correlationidlist.push(correlationid.clone());
         
         assignmentlist.push(Assignment::from(
-            correlationid.get_new_value().unwrap(),
+            correlationid,
             RunningMode::Apply,
             host.clone(),
             ConnectionMode::Ssh2,
@@ -89,7 +92,7 @@ async fn main() {
         ));
     }
  
-    let resultslist: Vec<Assignment> = Vec::new();
+    let mut resultslist: Vec<Assignment> = Vec::new();
 
     // Now, Assignments need to be sent to Message Broker (MB).
     // After this, "consume" the results from MB and push them in 'resultslist'.
@@ -145,6 +148,7 @@ async fn main() {
 
     // publish message  
     for assignment in assignmentlist.iter() {
+
         let content = serde_json::to_string(&assignment).unwrap().into_bytes();
 
         // create arguments for basic_publish
@@ -156,16 +160,38 @@ async fn main() {
             .unwrap();
     }
 
+    // Fetch a Result
+    let args = BasicGetArguments::new("results")
+        .no_ack(true)
+        .finish();
+    
+    loop {
+        tokio::time::sleep(Duration::from_millis(REFRESH_INTERVAL_MILLI_SECONDS)).await;
+
+        match channel.basic_get(args.clone()).await {
+            Ok(content) => {
+                match content {
+                    Some((_, _, raw_message)) => {
+                        let assignment_result: Assignment = serde_json::from_str(&String::from_utf8_lossy(&raw_message)).unwrap();
+
+                        let index = correlationidlist.iter().position(|x| (*x).eq(&assignment_result.correlationid)).unwrap();
+                        correlationidlist.remove(index);
+                        display_output(assignment_result.clone());
+                        resultslist.push(assignment_result);
+
+                        if correlationidlist.is_empty() {
+                            break;
+                        }
+                    }
+                    None => {}
+                }                        
+            }
+            Err(_) => {}
+        }        
+    }
+
+
     channel.close().await.unwrap();
     connection.close().await.unwrap();
 
-    // TODO : implement a better way to sort the output according to the order of the hosts in the HostList
-    // aka sort resultslist in HostList order so we simply have to go through resultslist after that
-    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
-        for assignment in resultslist.clone().into_iter() {
-            if host.eq(&assignment.host) {
-                display_output(assignment);
-            }
-        }
-    }
 }
