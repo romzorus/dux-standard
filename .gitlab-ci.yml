@@ -3,13 +3,13 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
 
 variables:
-  DUX_VERSION: "0.0.8"
+  DUX_VERSION: "0.0.9"
 
 stages:
   - build
   - deploy
 
-build-for-debian:
+build-duxtool-for-debian:
   stage: build
   image: romzorus/deb-rust-build:v1.0
   script:
@@ -23,7 +23,7 @@ build-for-debian:
     paths:
     - building/deb/duxtool-$DUX_VERSION.deb
 
-build-for-fedora:
+build-duxtool-for-fedora:
   stage: build
   image: romzorus/rpm-rust-build:v1.0
   script:
@@ -38,10 +38,72 @@ build-for-fedora:
     paths:
     - duxtool-$DUX_VERSION.rpm
 
+build-dux-controller-for-debian:
+  stage: build
+  image: romzorus/deb-rust-build:v1.0
+  script:
+   - cargo build --release
+   - mkdir -p building/deb/dux-controller/usr/bin
+   - cp target/release/controller building/deb/dux-controller/usr/bin/dux-controller
+   - chmod -R 755 building/deb/dux-controller
+   - dpkg-deb --build building/deb/dux-controller
+   - mv building/deb/dux-controller.deb building/deb/dux-controller-$DUX_VERSION.deb
+  artifacts:
+    paths:
+    - building/deb/dux-controller-$DUX_VERSION.deb
+
+build-dux-controller-for-fedora:
+  stage: build
+  image: romzorus/rpm-rust-build:v1.0
+  script:
+   - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux-controller.spec
+   - cp building/rpm/dux-controller.spec ~/rpmbuild/SPECS
+   - mkdir ~/rpmbuild/BUILDROOT/dux-controller-$DUX_VERSION-0.x86_64/
+   - cp target/release/controller ~/rpmbuild/BUILD/dux-controller
+   - rpmbuild -bb ~/rpmbuild/SPECS/dux-controller.spec
+   - cp ~/rpmbuild/RPMS/x86_64/dux-controller-$DUX_VERSION-0.x86_64.rpm dux-controller-$DUX_VERSION.rpm
+  artifacts:
+    paths:
+    - dux-controller-$DUX_VERSION.rpm
+
+build-dux-worker-for-debian:
+  stage: build
+  image: romzorus/deb-rust-build:v1.0
+  script:
+   - cargo build --release
+   - mkdir -p building/deb/dux-worker/usr/bin
+   - cp target/release/worker building/deb/dux-worker/usr/bin/dux-worker
+   - chmod -R 755 building/deb/dux-worker
+   - dpkg-deb --build building/deb/dux-worker
+   - mv building/deb/dux-worker.deb building/deb/dux-worker-$DUX_VERSION.deb
+  artifacts:
+    paths:
+    - building/deb/dux-worker-$DUX_VERSION.deb
+
+build-dux-worker-for-fedora:
+  stage: build
+  image: romzorus/rpm-rust-build:v1.0
+  script:
+   - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux-worker.spec
+   - cp building/rpm/dux-worker.spec ~/rpmbuild/SPECS
+   - mkdir ~/rpmbuild/BUILDROOT/dux-worker-$DUX_VERSION-0.x86_64/
+   - cp target/release/worker ~/rpmbuild/BUILD/dux-worker
+   - rpmbuild -bb ~/rpmbuild/SPECS/dux-worker.spec
+   - cp ~/rpmbuild/RPMS/x86_64/dux-worker-$DUX_VERSION-0.x86_64.rpm dux-worker-$DUX_VERSION.rpm
+  artifacts:
+    paths:
+    - dux-worker-$DUX_VERSION.rpm
+
 upload-to-package-registry:
   stage: deploy
   script:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/duxtool-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION.deb"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file duxtool-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/duxtool/$DUX_VERSION/duxtool-$DUX_VERSION.rpm"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-controller-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-controller/$DUX_VERSION/dux-controller-$DUX_VERSION.deb"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-controller-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-controller/$DUX_VERSION/dux-controller-$DUX_VERSION.rpm"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-worker-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-worker/$DUX_VERSION/dux-worker-$DUX_VERSION.deb"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-worker-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-worker/$DUX_VERSION/dux-worker-$DUX_VERSION.rpm"'
   rules:
    - if: $CI_COMMIT_BRANCH == "main"
