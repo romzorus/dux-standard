@@ -14,6 +14,7 @@ build-duxtool-for-debian:
   image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/duxtool/DEBIAN/control
    - mkdir -p building/deb/duxtool/usr/bin
    - cp target/release/all-in-one-worker building/deb/duxtool/usr/bin/duxtool
    - chmod -R 755 building/deb/duxtool
@@ -43,6 +44,7 @@ build-dux-controller-for-debian:
   image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux-controller/DEBIAN/control
    - mkdir -p building/deb/dux-controller/usr/bin
    - cp target/release/controller building/deb/dux-controller/usr/bin/dux-controller
    - chmod -R 755 building/deb/dux-controller
@@ -72,6 +74,7 @@ build-dux-worker-for-debian:
   image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux-worker/DEBIAN/control
    - mkdir -p building/deb/dux-worker/usr/bin
    - cp target/release/worker building/deb/dux-worker/usr/bin/dux-worker
    - chmod -R 755 building/deb/dux-worker
