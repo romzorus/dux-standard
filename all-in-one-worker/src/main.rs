@@ -17,10 +17,20 @@ fn main() {
         tasklist_get_from_file(&cliargs.tasklist)
         );
 
-    // Build a HostList (not implemented yet)
+    if tasklist.tasks.is_empty() {
+        println!("No task in given list ({})", &cliargs.tasklist);
+        exit(0);
+    }
+    
+    // Build a HostList
     let hostlist = hostlist_parser(
         hostlist_get_from_file(&cliargs.hostlist)
     );
+
+    if hostlist.hosts.is_none() && hostlist.groups.is_none() {
+        println!("No hosts in given list ({})", &cliargs.hostlist);
+        exit(0);
+    }
 
     // Build Assignments (an Assignment is basically a Host associated to a TaskList)
     //  -> Initialization of CorrelationId (not really required for all-in-one mode)
@@ -29,18 +39,9 @@ fn main() {
     //  -> Actual build of Assignments
     let mut assignmentlist: Vec<Assignment> = Vec::new();
 
-    let hosts = match hostlist_get_all_hosts(&hostlist) {
-        Some(hosts) => {
-            hosts
-        }
-        None => {
-            println!("No hosts in given list ({})", &cliargs.hostlist);
-            exit(0);
-        }
-    };
-
-    for host in hosts {
-
+    // This unwrap is safe since we checked before that the list is not empty.
+    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
                 Ssh2AuthMode::SshKeys((
