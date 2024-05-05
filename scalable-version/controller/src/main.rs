@@ -11,6 +11,7 @@ use hostparser::*;
 use taskexec::prelude::*;
 use taskparser::prelude::*;
 use std::path::PathBuf;
+use std::process::exit;
 
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
@@ -52,7 +53,17 @@ async fn main() {
     let mut assignmentlist: Vec<Assignment> = Vec::new();
     let mut correlationidlist: Vec<String> = Vec::new();
 
-    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    let hosts = match hostlist_get_all_hosts(&hostlist) {
+        Some(hosts) => {
+            hosts
+        }
+        None => {
+            println!("No hosts in given list ({})", &cliargs.hostlist);
+            exit(0);
+        }
+    };
+
+    for host in hosts {
 
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
