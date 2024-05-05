@@ -18,7 +18,7 @@ impl DryRun for AptBlockExpectedState {
     fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
-        if ! is_apt_working(hosthandler, privilege.clone()) {
+        if ! hosthandler.is_this_cmd_available("apt-get").unwrap() || ! hosthandler.is_this_cmd_available("dpkg").unwrap(){
             return ModuleBlockChange::failed_to_evaluate("APT not working on this host");
         }
 
@@ -171,7 +171,7 @@ impl Apply for AptApiCall {
             }
             "upgrade" => {
                 hosthandler.run_cmd("apt-get update", self.privilege.clone()).unwrap();
-                let cmd = "DEBIAN_FRONTEND=noninteractive apt-get upgrade -qq";
+                let cmd = "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y";
                 let cmd_result = hosthandler.run_cmd(cmd, self.privilege.clone()).unwrap();
                 
                 if cmd_result.exitcode == 0 {
@@ -200,20 +200,6 @@ impl AptApiCall {
             package,
             privilege
         }
-    }
-}
-
-// TODO : add more granular error messages
-// -> apt not working but present ? -> permission issue ? (return code = 100)
-fn is_apt_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
-
-    let cmd = "DEBIAN_FRONTEND=noninteractive apt-get check";
-    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
-
-    if cmd_result.exitcode != 0 {
-        return false;
-    } else {
-        return true;
     }
 }
 
