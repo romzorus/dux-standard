@@ -21,9 +21,9 @@ impl DryRun for YumDnfBlockExpectedState {
 
         let mut tool = String::new();
 
-        if is_dnf_working(hosthandler, privilege.clone()) {
+        if hosthandler.is_this_cmd_available("dnf").unwrap() {
             tool = String::from("dnf");
-        } else if is_yum_working(hosthandler, privilege.clone()) {
+        } else if hosthandler.is_this_cmd_available("yum").unwrap() {
             tool = String::from("yum");
         } else {
             return ModuleBlockChange::failed_to_evaluate("Neither YUM nor DNF work on this host");
@@ -207,30 +207,6 @@ impl YumDnfApiCall {
             package,
             privilege
         }
-    }
-}
-
-fn is_dnf_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
-
-    let cmd = "dnf";
-    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
-
-    if cmd_result.exitcode == 0 {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-fn is_yum_working(hosthandler: &mut HostHandler, privilege: Privilege) -> bool {
-
-    let cmd = "yum";
-    let cmd_result = hosthandler.run_cmd(cmd, privilege).unwrap();
-
-    if cmd_result.exitcode == 0 {
-        return true;
-    } else {
-        return false;
     }
 }
 
