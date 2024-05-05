@@ -16,13 +16,17 @@ use tokio::{runtime::Builder, task::JoinHandle};
 use tokio::time::Duration;
 use tracing_subscriber::{fmt, prelude::*};
 use tracing_subscriber::filter::EnvFilter;
+use log::{debug, error, log_enabled, info, Level};
+use env_logger::Env;
 
-// #[tokio::main]
-// async fn main() {
 fn main() {
+    let env = Env::default()
+    .filter_or("INFO", "info");
+
+    env_logger::init_from_env(env);
+
     welcome_message_worker();
-    println!("[Dux worker]"); // TODO : have a nice display for this also
-    println!("");
+
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
@@ -121,7 +125,7 @@ pub async fn assignment_handler() {
         }
         let mut assignment: Assignment = serde_json::from_str(&String::from_utf8_lossy(&message_raw_content)).unwrap();
 
-        println!("[Info] {} : Assignment received", assignment.correlationid.clone());
+        info!("{} : Assignment received", assignment.correlationid.clone());
 
         let mut hosthandler = HostHandler::from(
             assignment.connectionmode.clone(),
@@ -155,7 +159,7 @@ pub async fn assignment_handler() {
             .basic_publish(BasicProperties::default(), serialized_result, args)
             .await
             .unwrap();
-        println!("[Info] {} : Result sent to message broker", assignment.correlationid.clone());
+        info!("{} : Result sent to message broker", assignment.correlationid.clone());
     }
     
     // "Produce" Assignments results (with DryRun and Results filled) and send them to the MB
