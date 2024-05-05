@@ -25,6 +25,21 @@ impl DryRun for LineInFileBlockExpectedState {
     fn dry_run_block(&self, hosthandler: &mut HostHandler, privilege: Privilege) -> ModuleBlockChange {
         assert!(hosthandler.ssh2.sshsession.authenticated());
 
+        if ! hosthandler.is_this_cmd_available("sed").unwrap() {
+            return ModuleBlockChange::failed_to_evaluate("Sed command not available on this host");
+        }
+
+        let file_exists_check = hosthandler.run_cmd(
+            format!("test -f {}", self.filepath).as_str(),
+            privilege.clone()
+        ).unwrap();
+    
+        if file_exists_check.exitcode != 0 {
+            return ModuleBlockChange::failed_to_evaluate(
+                format!("{} not found or not a regular file", self.filepath).as_str()
+            );
+        }
+
         let mut changes: Vec<ModuleApiCall> = Vec::new();
        
         match &self.state {
@@ -219,7 +234,25 @@ impl Apply for LineInFileApiCall {
 
                 match self.position {
                     Some(linenumber) => {
-                        cmd = format!("sed -i \'{} i {}\' {}", linenumber, self.line, self.path);
+                        // If the file is empty, the sed command won't work.
+                        let filesizecheck_cmd = format!("test -s {}", self.path);
+                        let filesizecheck = hosthandler.run_cmd(filesizecheck_cmd.as_str(), self.privilege.clone()).unwrap();
+                        if filesizecheck.exitcode == 0 { // File not empty
+                            cmd = format!("sed -i \'{} i {}\' {}", linenumber, self.line, self.path);
+                        } else { // File empty
+                            if linenumber == 1 { // Position = "top"
+                                cmd = format!("echo \'{}\' >> {}", self.line, self.path);
+                            } else { // Position = <any other value> which is out of range anyway
+                                return ApiCallResult::from(
+                                    Some(filesizecheck.exitcode),
+                                    Some(filesizecheck.stdout),
+                                    ApiCallStatus::Failure(
+                                        String::from("Position value out of range (use \"bottom\" instead)")
+                                    )
+                                );
+                            }
+                        }
+                        
                     }
                     None => {
                         // If no line number is specified, the default behavior is to add the line at the bottom of the file
