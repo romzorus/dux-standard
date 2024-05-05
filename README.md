@@ -1,4 +1,4 @@
-# Dux : a scalable and cloud-friendly automation tool written in Rust
+# Dux : a large-scale automation tool written in Rust
 <div align="center">
 <img src="img/dux.png" width="25%">
 </div>
@@ -6,7 +6,7 @@
 # Our goal
 Build a scalable automation tool ready to handle a massive amount of remote hosts in parallel.
 It comes in 2 versions :
-- scalable version : 3 components (Master Node / Message Broker / Worker Node)
+- scalable version : 3 components (Controller Node / Message Broker / Worker Node)
 - all-in-one version : 1 executable which does everything
 
 # Scalable version
@@ -115,7 +115,7 @@ sudo usermod -aG sudo dux
 echo "dux ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/dux
 ```
 
-## On controller host (where Dux is installed)
+## On controller host (all-in-one version or worker node)
 The ideal is to have a SSH passwordless connection :
 ```
 # Generate a SSH key (no passphrase for the example)
