@@ -35,7 +35,15 @@ pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
 }
 
 pub fn tasklist_get_from_file(file_path: &str) -> String {
-    std::fs::read_to_string(file_path).unwrap() // Placeholder : error handling required here
+    match std::fs::read_to_string(file_path) {
+        Ok(content) => {
+            return content;
+        }
+        Err(e) => {
+            println!("Unable to open file : {:?}", e);
+            exit(1);
+        }
+    }
 }
 
 pub fn tasklist_get_from_interactive_mode() -> String {
