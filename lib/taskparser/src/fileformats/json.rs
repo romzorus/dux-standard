@@ -8,8 +8,8 @@ pub fn json_tasklist_parser(tasklistcontent: &String) -> Result<TaskList, Error>
         Ok(parsed_content) => {
             return Ok(TaskList::from(parsed_content));
         }
-        Err(_e) => {
-            return Err(Error::FailureToParseFile)
+        Err(e) => {
+            return Err(Error::FailureToParseFile(format!("{:?}", e)))
         }
     }
 }

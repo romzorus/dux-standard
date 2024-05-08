@@ -15,7 +15,9 @@ pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
             }
             return parsed_content;
         }
-        Err(_e) => {
+        Err(e) => {
+            println!("Unable to parse TaskList as YAML: {:?}", e);
+            println!("Trying to parse TaskList as JSON.");
             match json_tasklist_parser(&tasklistcontent) {
                 Ok(mut parsed_content) => {
                     for (taskindex, taskcontent) in parsed_content.clone().tasks.iter().enumerate() {
@@ -25,8 +27,10 @@ pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
                     }
                     return parsed_content;
                 }
-                Err(_e) => {
-                    exit(1) // Placeholder : error handling required here
+                Err(e) => {
+                    println!("Unable to parse TaskList JSON: {:?}", e);
+                    println!("Unable to parse TaskList at all. Abort.");
+                    exit(1);
                 }
             }
         }
@@ -40,7 +44,7 @@ pub fn tasklist_get_from_file(file_path: &str) -> String {
             return content;
         }
         Err(e) => {
-            println!("Unable to open file : {:?}", e);
+            println!("Unable to open TaskList file : {:?}", e);
             exit(1);
         }
     }
