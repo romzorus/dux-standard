@@ -12,6 +12,8 @@ use taskexec::prelude::*;
 use taskparser::prelude::*;
 use std::path::PathBuf;
 use std::process::exit;
+use log::{debug, error, log_enabled, info, Level, warn};
+use env_logger::Env;
 
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
@@ -28,9 +30,12 @@ use tracing_subscriber::filter::EnvFilter;
 
 #[tokio::main]
 async fn main() {
+    let env = Env::default()
+    .filter_or("INFO", "info");
+
+    env_logger::init_from_env(env);
+
     welcome_message_controller();
-    // println!("[Dux controller]"); // TODO : have a nice display for this also
-    // println!("");
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
@@ -41,7 +46,7 @@ async fn main() {
         );
     
     if tasklist.tasks.is_empty() {
-        println!("No task in given list ({})", &cliargs.tasklist);
+        warn!("No task in given list ({})", &cliargs.tasklist);
         exit(0);
     }
     
@@ -51,7 +56,7 @@ async fn main() {
     );
 
     if hostlist.hosts.is_none() && hostlist.groups.is_none() {
-        println!("No hosts in given list ({})", &cliargs.hostlist);
+        warn!("No hosts in given list ({})", &cliargs.hostlist);
         exit(0);
     }
 
@@ -61,8 +66,7 @@ async fn main() {
     match correlationid.init() {
         Ok(_) => {}
         Err(e) => {
-            println!("Error: failure to initialize CorrelationId");
-            println!("{:?}", e);
+            error!("Error: failure to initialize CorrelationId : {:?}", e);
             exit(1);
         }
     }
@@ -89,12 +93,14 @@ async fn main() {
                         )
                     }
                     None => {
-                        panic!("No SSH key or password to connect to remote host."); // TODO : gracefully quit instead of panic
+                        error!("No SSH key or password to connect to remote host.");
+                        exit(1);
                     }
                 }
             }
         };
 
+        // This unwrap() is safe because initialization is checked before.
         let correlationid = correlationid.get_new_value().unwrap();
         correlationidlist.push(correlationid.clone());
         
@@ -177,8 +183,10 @@ async fn main() {
             .basic_publish(BasicProperties::default(), content, args)
             .await
             .unwrap();
-    }
 
+        info!("{} : assignment sent to message broker", assignment.correlationid);
+    }
+    println!("");
     // Fetch a Result
     let args = BasicGetArguments::new("results")
         .no_ack(true)
@@ -195,6 +203,9 @@ async fn main() {
 
                         let index = correlationidlist.iter().position(|x| (*x).eq(&assignment_result.correlationid)).unwrap();
                         correlationidlist.remove(index);
+
+                        info!("{} : assignment result received", assignment_result.correlationid);
+
                         display_output(assignment_result.clone());
                         resultslist.push(assignment_result);
 
