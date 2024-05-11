@@ -58,7 +58,14 @@ async fn main() {
     // Build Assignments (an Assignment is basically a Host associated to a TaskList)
     //  -> Initialization of CorrelationId (not really required for all-in-one mode)
     let mut correlationid = CorrelationIdGenerator::new();
-    correlationid.init();
+    match correlationid.init() {
+        Ok(_) => {}
+        Err(e) => {
+            println!("Error: failure to initialize CorrelationId");
+            println!("{:?}", e);
+            exit(1);
+        }
+    }
     //  -> Actual build of Assignments
     let mut assignmentlist: Vec<Assignment> = Vec::new();
     let mut correlationidlist: Vec<String> = Vec::new();

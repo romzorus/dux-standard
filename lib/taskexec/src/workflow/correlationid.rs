@@ -19,15 +19,25 @@ impl CorrelationIdGenerator {
         }
     }
 
-    pub fn init(&mut self) {
-        let salt = IdBuilder::new(Encryption::MD5)
+    pub fn init(&mut self) -> Result<(), Error> {
+        let saltbuilding = IdBuilder::new(Encryption::MD5)
             .add_component(HWIDComponent::CPUID)
             .add_component(HWIDComponent::MacAddress)
             .add_component(HWIDComponent::MachineName)
             .add_component(HWIDComponent::Username)
-            .build("dux").unwrap();
+            .build("dux");
 
-        self.salt = salt;
+        match saltbuilding {
+            Ok(salt) => {
+                self.salt = salt;
+                return Ok(());
+            }
+            Err(e) => {
+                return Err(Error::FailedInitialization(format!("{}", e)));
+            }
+        }
+
+        
     }
 
     pub fn get_new_value(&mut self) -> Result<String, Error> {
