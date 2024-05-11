@@ -71,7 +71,7 @@ fn main() {
         };
         
         assignmentlist.push(Assignment::from(
-            correlationid.get_new_value().unwrap(),
+            correlationid.get_new_value().unwrap(), // This unwrap() is safe because initialization is checked before.
             RunningMode::Apply,
             host.clone(),
             ConnectionMode::Ssh2,
