@@ -2,6 +2,7 @@ use std::process::exit;
 use taskexec::workflow::task::TaskList;
 use crate::fileformats::json::json_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
+use errors::Error;
 
 pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
 

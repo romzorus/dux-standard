@@ -9,7 +9,7 @@ pub fn yaml_tasklist_parser(tasklistcontent: &String) -> Result<TaskList, Error>
             return Ok(TaskList::from(parsed_content));
         }
         Err(e) => {
-            return Err(Error::FailureToParseFile(format!("{:?}", e)))
+            return Err(Error::FailureToParseContent(format!("{:?}", e)))
         }
     }
 }
