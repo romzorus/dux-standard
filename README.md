@@ -144,6 +144,22 @@ A `lineinfile.rs` file is created in `lib/taskexec/src/modules`. Now you only ha
 ## Want to talk about this project ?
 Open to suggestions, feedback, requests and any contribution ! Let's talk [here](https://discord.com/invite/2gxAW7uzsx) !
 
+## Todo list
+- [ ] All: introduce variabilization in TaskLists
+- [ ] All: introduce configuration files
+- [ ] HostList: introduce aliases
+- [ ] HostList: introduce parameters (per all/group/host)
+- [ ] HostList: add JSON format handling
+- [ ] TaskExec: modules need to produce a standardized JSON result
+- [ ] CLI: checks and argument need to be adapted between all-in-one, controller and worker exec
+- [ ] RabbitMQ: turn connections parts into a crate
+- [ ] RabbitMQ: add resiliency mechanisms (lost connection...etc)
+- [ ] All: add unit tests and integration tests
+- [ ] Pipeline: add tests
+- [ ] Pipeline: remove previous package if run with same version number (overwrite)
+- [ ] Worker: create Docker image to allow scaling it
+- [ ] Connection: introduce compatibility with [QUIC](https://github.com/quinn-rs/quinn), [SSH3](https://github.com/francoismichel/ssh3), other protocol ?
+
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
