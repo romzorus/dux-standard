@@ -201,8 +201,11 @@ async fn main() {
                     Some((_, _, raw_message)) => {
                         let assignment_result: Assignment = serde_json::from_str(&String::from_utf8_lossy(&raw_message)).unwrap();
 
-                        let index = correlationidlist.iter().position(|x| (*x).eq(&assignment_result.correlationid)).unwrap();
-                        correlationidlist.remove(index);
+                        match correlationidlist.iter().position(|x| (*x).eq(&assignment_result.correlationid)) {
+                            Some(index) => { correlationidlist.remove(index); }
+                            None => {} // TODO: handle this case : a result is in the queue but it doesn't match the assignments run this time
+                        }
+                        
 
                         info!("{} : assignment result received", assignment_result.correlationid);
 
