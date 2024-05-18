@@ -3,6 +3,8 @@ use taskexec::workflow::task::TaskList;
 use crate::fileformats::json::json_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
 use errors::Error;
+use errors::FAILURE_TO_OPEN_FILE;
+use errors::FAILURE_TO_PARSE_FILE;
 
 pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
 
@@ -31,7 +33,7 @@ pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
                 Err(e) => {
                     println!("Unable to parse TaskList JSON: {:?}", e);
                     println!("Unable to parse TaskList at all. Abort.");
-                    exit(1);
+                    exit(FAILURE_TO_PARSE_FILE);
                 }
             }
         }
@@ -46,7 +48,7 @@ pub fn tasklist_get_from_file(file_path: &str) -> String {
         }
         Err(e) => {
             println!("Unable to open TaskList file : {:?}", e);
-            exit(1);
+            exit(FAILURE_TO_OPEN_FILE);
         }
     }
 }
