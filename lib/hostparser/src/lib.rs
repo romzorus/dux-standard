@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::Deserialize;
 use errors::Error;
 
@@ -5,32 +6,122 @@ use errors::Error;
 // pub struct Host {
 //     ...
 // }
+#[derive(Debug, Deserialize, Clone)]
+pub struct Host {
+    address: String,
+    vars: Option<HashMap<String, String>>
+}
+
+impl Host {
+    pub fn from_string(address: String) -> Host {
+        Host {
+            address,
+            vars: None
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct HostListVarsUnparsed {
+    pub vars: Option<HashMap<String, String>>,
+    pub hosts: Option<Vec<String>>,
+    pub groups: Option<Vec<Group>>
+}
+
+impl HostListVarsUnparsed {
+    pub fn parse(&self) -> HostList {
+
+        match &self.hosts {
+            Some(hosts_list) => {
+
+                let mut parsed_hosts: Vec<Host> = Vec::new();
+
+                for host_string in hosts_list {
+                    let mut line = host_string.split(['[', ']']);
+                    let hostname = line.next().unwrap().trim();
+
+                    match line.next() {
+                        Some(vars_content) => {
+                            let mut vars_list: HashMap<String, String> = HashMap::new();
+                            for vardef in vars_content.split(',') {
+                                let mut vardef_parsed = vardef.split('=');
+                                let key = vardef_parsed.next().unwrap().trim();
+                                let value = vardef_parsed.next().unwrap().trim();
+                                vars_list.insert(key.to_string(), value.to_string());
+                            }
+                            parsed_hosts.push(Host {
+                                address: hostname.to_string(),
+                                vars: Some(vars_list)
+                            })
+                        }
+                        None => {
+                            parsed_hosts.push(Host {
+                                address: hostname.to_string(),
+                                vars: None
+                            })
+                        }
+                    }
+                }
+
+                HostList {
+                    hosts: Some(parsed_hosts),
+                    groups: self.groups.clone(),
+                    vars: self.vars.clone()
+                }
+            }
+            None => {
+                HostList {
+                    hosts: None,
+                    groups: self.groups.clone(),
+                    vars: self.vars.clone()
+                }
+            }
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct HostList {
-    pub hosts: Option<Vec<String>>,
-    pub groups: Option<Vec<Group>>
+    pub vars: Option<HashMap<String, String>>,
+    pub hosts: Option<Vec<Host>>,
+    pub groups: Option<Vec<Group>>,
 }
 
 impl HostList {
     pub fn new() -> HostList {
         HostList {
+            vars: Some(HashMap::new()),
             hosts: Some(Vec::new()),
-            groups: Some(Vec::new())
+            groups: Some(Vec::new()),
         }
     }
 
-    pub fn from_hosts(hosts: Vec<String>) -> HostList {
+    pub fn from_hosts(hosts: Vec<Host>, vars: Option<HashMap<String, String>>) -> HostList {
         if hosts.is_empty() {
             HostList {
+                vars: None,
                 hosts: None,
                 groups: None
             }
         } else {
-            HostList {
-                hosts: Some(hosts),
-                groups: None
+            match vars {
+                Some(variables) => {
+                    HostList {
+                        vars: Some(variables),
+                        hosts: Some(hosts),
+                        groups: None
+                    }
+                }
+                None => {
+                    HostList {
+                        vars: None,
+                        hosts: Some(hosts),
+                        groups: None
+                    }
+                }
             }
+
+
         }
 
     }
@@ -39,14 +130,16 @@ impl HostList {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Group {
     pub name: String,
+    pub vars: Option<HashMap<String, String>>,
     pub hosts: Option<Vec<String>>
 }
 
 // TODO : So far, we assume the hostlist file is in YAML format. More formats will come later.
 pub fn hostlist_parser(hostlistcontent: String) -> HostList {
 
-    let parsed_content: HostList = serde_yaml::from_str(&hostlistcontent).unwrap();
-    return parsed_content;
+    let parsed_content_temp: HostListVarsUnparsed = serde_yaml::from_str(&hostlistcontent).unwrap();
+    let parsed_content = parsed_content_temp.parse();
+    parsed_content
 }
 
 pub fn hostlist_get_from_file(file_path: &str) -> String {
@@ -82,7 +175,7 @@ pub fn hostlist_get_specific_group_content(hostlist: &HostList, groupname: &str)
 
 pub fn hostlist_get_all_hosts(hostlist: &HostList) -> Option<Vec<String>> {
     
-    let mut all_hosts: Vec<String> = Vec::new();
+    let mut all_hosts: Vec<Host> = Vec::new();
 
     match hostlist.clone().hosts {
         Some(hostslist) => {
@@ -96,7 +189,16 @@ pub fn hostlist_get_all_hosts(hostlist: &HostList) -> Option<Vec<String>> {
             for group in groupslist {
                 match group.hosts {
                     Some(hostslist) => {
-                        all_hosts.extend(hostslist);
+                        let mut hosts: Vec<Host> = Vec::new();
+                        for host in hostslist {
+                            hosts.push(
+                                Host {
+                                    address: host,
+                                    vars: None
+                                }
+                            );
+                        }
+                        all_hosts.extend(hosts);
                     }
                     None => {}
                 }
@@ -108,6 +210,11 @@ pub fn hostlist_get_all_hosts(hostlist: &HostList) -> Option<Vec<String>> {
     if all_hosts.is_empty() {
         return None;
     } else {
-        return Some(all_hosts);
+        // TODO : Temporarily still returning Strings as usual, until Host type is used everywhere
+        let mut final_hosts_list: Vec<String> = Vec::new();
+        for host in all_hosts {
+            final_hosts_list.push(host.address);
+        }
+        Some(final_hosts_list)
     }
 }
