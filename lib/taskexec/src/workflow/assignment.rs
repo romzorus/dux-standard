@@ -1,11 +1,15 @@
-use crate::prelude::ModuleApiCall;
 // This part is used to generate an Assignment based on a TaskList and a HostList.
+
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
+use connection::prelude::*;
+use errors::Error;
+use crate::prelude::ModuleApiCall;
 use crate::workflow::change::{ChangeList, ModuleBlockChange};
 use crate::workflow::task::TaskList;
 use crate::workflow::result::{ApiCallStatus, TaskListResult};
-use connection::prelude::*;
-use errors::Error;
-use serde::{Serialize, Deserialize};
+
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assignment {
@@ -14,7 +18,7 @@ pub struct Assignment {
     pub host: String,
     pub connectionmode: ConnectionMode,
     pub authmode: Ssh2AuthMode,
-    // pub hosthandler: HostHandler,
+    pub variables: HashMap<String, String>,
     pub tasklist: TaskList,
     pub changelist: ChangeList,
     pub tasklistresult: TaskListResult,
@@ -29,7 +33,7 @@ impl Assignment {
             host: String::from(""),
             connectionmode: ConnectionMode::Unset,
             authmode: Ssh2AuthMode::Unset,
-            // hosthandler: HostHandler::new(),
+            variables: HashMap::new(),
             tasklist: TaskList::new(),
             changelist: ChangeList::new(),
             tasklistresult: TaskListResult::new(),
@@ -43,7 +47,7 @@ impl Assignment {
         host: String,
         connectionmode: ConnectionMode,
         authmode: Ssh2AuthMode,
-        // hosthandler: HostHandler,
+        variables: HashMap<String, String>,
         tasklist: TaskList,
         changelist: ChangeList,
         tasklistresult: TaskListResult,
@@ -56,7 +60,7 @@ impl Assignment {
                 host,
                 connectionmode,
                 authmode,
-                // hosthandler,
+                variables,
                 tasklist,
                 changelist,
                 tasklistresult,
