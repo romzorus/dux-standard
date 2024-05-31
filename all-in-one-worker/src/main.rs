@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use cli::prelude::*;
 use connection::prelude::*;
 use hostparser::*;
@@ -26,7 +27,7 @@ fn main() {
         hostlist_get_from_file(&cliargs.hostlist)
     );
 
-    if hostlist.hosts.is_none() && hostlist.groups.is_none() {
+    if hostlist_get_all_hosts(&hostlist).is_none() {
         println!("No hosts in given list ({})", &cliargs.hostlist);
         exit(0);
     }
@@ -76,6 +77,7 @@ fn main() {
             host.clone(),
             ConnectionMode::Ssh2,
             authmode,
+            HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),
             TaskListResult::new(),
