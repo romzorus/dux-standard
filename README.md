@@ -147,8 +147,10 @@ Open to suggestions, feedback, requests and any contribution ! Let's talk [here]
 ## Todo list
 - [ ] All: introduce variabilization in TaskLists
 - [ ] All: introduce configuration files
+- [ ] All: optimization (lots of `clone` out there)
+- [ ] All: error handling (lots of `unwrap` out there)
 - [ ] HostList: introduce aliases
-- [ ] HostList: introduce parameters (per all/group/host)
+- [x] HostList: introduce parameters (per all/group/host)
 - [ ] HostList: add JSON format handling
 - [ ] TaskExec: modules need to produce a standardized JSON result
 - [ ] CLI: checks and argument need to be adapted between all-in-one, controller and worker exec
@@ -159,6 +161,9 @@ Open to suggestions, feedback, requests and any contribution ! Let's talk [here]
 - [ ] Pipeline: remove previous package if run with same version number (overwrite)
 - [ ] Worker: create Docker image to allow scaling it
 - [ ] Connection: introduce compatibility with [QUIC](https://github.com/quinn-rs/quinn), [SSH3](https://github.com/francoismichel/ssh3), other protocol ?
+- [ ] modules to handle Android and IOT devices
+- [ ] log generation : what is applied when on what, syslog interaction, ability to generate JSON content (for log aggregators for example)
+- [ ] mode pass-on-demand (TaskList applied only when asked) VS watcher (TaskList applied on a regular basis by the Controller/Worker) VS agent (exec with an Assignment embedded in Controlled Host which regularly applies it on localhost)
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
