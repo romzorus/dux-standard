@@ -1,13 +1,14 @@
-# Dux : a large-scale automation tool written in Rust
+# Dux : a large-scale automation tool written in Rust (proof of concept)
 <div align="center">
 <img src="img/dux.png" width="25%">
 </div>
 
 # Our goal
 Build a scalable automation tool ready to handle a massive amount of remote hosts in parallel.
-It comes in 2 versions :
+It comes in 3 versions :
 - scalable version : 3 components (Controller Node / Message Broker / Worker Node)
-- all-in-one version : 1 executable which does everything
+- all-in-one version : 1 executable which does everything (run TaskList on all the controlled hosts)
+- agent version (to be done): dux installed as a service on a host and regularly enforcing a TaskList which can be a local/remote file or a URL (pointing to a git repository for example)
 
 # Scalable version
 **Overview**
@@ -37,7 +38,7 @@ A worker node can be either a physical/virtual machine or a container. To increa
       with_sudo: true
       apt:
         state: present
-        package: git
+        package: "{{ packagename }}"
     
     - name: 4. Clean before clone
       command:
@@ -49,6 +50,9 @@ A worker node can be either a physical/virtual machine or a container. To increa
 ~~~
 *and `hostlist.yaml`*
 ~~~
+vars:
+  packagename: git
+
 hosts:
   - 192.168.1.6
   - 192.168.1.85
@@ -145,7 +149,7 @@ A `lineinfile.rs` file is created in `lib/taskexec/src/modules`. Now you only ha
 Open to suggestions, feedback, requests and any contribution ! Let's talk [here](https://discord.com/invite/2gxAW7uzsx) !
 
 ## Todo list
-- [ ] All: introduce variabilization in TaskLists
+- [x] All: introduce variabilization in TaskLists
 - [ ] All: introduce configuration files
 - [ ] All: optimization (lots of `clone` out there)
 - [ ] All: error handling (lots of `unwrap` out there)
@@ -164,6 +168,7 @@ Open to suggestions, feedback, requests and any contribution ! Let's talk [here]
 - [ ] modules to handle Android and IOT devices
 - [ ] log generation : what is applied when on what, syslog interaction, ability to generate JSON content (for log aggregators for example)
 - [ ] mode pass-on-demand (TaskList applied only when asked) VS watcher (TaskList applied on a regular basis by the Controller/Worker) VS agent (exec with an Assignment embedded in Controlled Host which regularly applies it on localhost)
+- [ ] agent version : dux running on a Host as a service, regularly retrieving TaskList from a local file, a remote host or a URL (git repo) and applying it to localhost -> pull mode : the controlled Host are actually the ones that fetch TaskList and apply it to themselves, instead of waiting for a Worker node to take care of them (push)
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
