@@ -1,14 +1,15 @@
 use std::process::exit;
 use taskexec::workflow::task::TaskList;
+use hostparser::Host;
 use crate::fileformats::json::json_tasklist_parser;
 use crate::fileformats::yaml::yaml_tasklist_parser;
 use errors::Error;
 use errors::FAILURE_TO_OPEN_FILE;
 use errors::FAILURE_TO_PARSE_FILE;
 
-pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
+pub fn tasklist_parser(tasklistcontent: String, host: &Host) -> TaskList {
 
-    match yaml_tasklist_parser(&tasklistcontent) {
+    match yaml_tasklist_parser(&tasklistcontent, host) {
         Ok(mut parsed_content) => {
 
             for (taskindex, taskcontent) in parsed_content.clone().tasks.iter().enumerate() {
@@ -21,7 +22,7 @@ pub fn tasklist_parser(tasklistcontent: String) -> TaskList {
         Err(e) => {
             println!("Unable to parse TaskList as YAML: {:?}", e);
             println!("Trying to parse TaskList as JSON.");
-            match json_tasklist_parser(&tasklistcontent) {
+            match json_tasklist_parser(&tasklistcontent, host) {
                 Ok(mut parsed_content) => {
                     for (taskindex, taskcontent) in parsed_content.clone().tasks.iter().enumerate() {
                         for (stepindex, _stepcontent) in taskcontent.steps.iter().enumerate() {
