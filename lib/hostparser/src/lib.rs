@@ -4,9 +4,9 @@ use errors::Error;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Host {
-    address: String,
-    vars: Option<HashMap<String, String>>,
-    groups: Option<Vec<String>>
+    pub address: String,
+    pub vars: Option<HashMap<String, String>>,
+    pub groups: Option<Vec<String>>
 }
 
 impl Host {
@@ -172,9 +172,13 @@ impl HostListFile {
                                         let mut temp_host = Host::from_string(host_address.clone());
                                         temp_host.add_to_group(&group.name);
                                         // First, add HostList level variables
-                                        temp_host.add_vars(&self.vars.as_ref().unwrap());
+                                        if let Some(vars_content) = &self.vars.as_ref() {
+                                            temp_host.add_vars(vars_content);
+                                        }
                                         // Then add group level variables (surcharge)
-                                        temp_host.add_vars(&group.vars.as_ref().unwrap());
+                                        if let Some(vars_content) = &group.vars.as_ref() {
+                                            temp_host.add_vars(vars_content);
+                                        }
         
                                         final_hostlist.push(temp_host);
                                     }
@@ -199,9 +203,13 @@ impl HostListFile {
                         None => {
                             let mut temp_host = Host::from_string(host.address.clone());
                             // First, add HostList level variables
-                            temp_host.add_vars(&self.vars.as_ref().unwrap());
+                            if let Some(vars_content) = &self.vars.as_ref() {
+                                temp_host.add_vars(vars_content);
+                            }
                             // Then add host level variables (surcharge)
-                            temp_host.add_vars(&host.vars.as_ref().unwrap());
+                            if let Some(vars_content) = &host.vars.as_ref() {
+                                temp_host.add_vars(vars_content);
+                            }
 
                             final_hostlist.push(temp_host);
                         }
