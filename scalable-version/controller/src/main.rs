@@ -39,16 +39,6 @@ async fn main() {
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
-
-    // Build a TaskList (YAML is assumed for now)
-    let tasklist = tasklist_parser(
-        tasklist_get_from_file(&cliargs.tasklist)
-        );
-    
-    if tasklist.tasks.is_empty() {
-        warn!("No task in given list ({})", &cliargs.tasklist);
-        exit(0);
-    }
     
     // Build a HostList
     let hostlist = hostlist_parser(
@@ -75,7 +65,7 @@ async fn main() {
     let mut correlationidlist: Vec<String> = Vec::new();
 
     // This unwrap is safe since we checked before that the list is not empty.
-    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    for host in hostlist.hosts.unwrap() {
 
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
@@ -100,6 +90,17 @@ async fn main() {
             }
         };
 
+        // Build a TaskList (YAML is assumed for now)
+        let tasklist = tasklist_parser(
+            tasklist_get_from_file(&cliargs.tasklist),
+            &host
+            );
+        
+        if tasklist.tasks.is_empty() {
+            warn!("No task in given list ({})", &cliargs.tasklist);
+            exit(0);
+        }
+
         // This unwrap() is safe because initialization is checked before.
         let correlationid = correlationid.get_new_value().unwrap();
         correlationidlist.push(correlationid.clone());
@@ -107,7 +108,7 @@ async fn main() {
         assignmentlist.push(Assignment::from(
             correlationid,
             RunningMode::Apply,
-            host.clone(),
+            host.address.clone(),
             ConnectionMode::Ssh2,
             authmode,
             HashMap::new(),

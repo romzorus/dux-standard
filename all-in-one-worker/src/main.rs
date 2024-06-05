@@ -12,15 +12,6 @@ fn main() {
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
-
-    let tasklist = tasklist_parser(
-        tasklist_get_from_file(&cliargs.tasklist)
-        );
-
-    if tasklist.tasks.is_empty() {
-        println!("No task in given list ({})", &cliargs.tasklist);
-        exit(0);
-    }
     
     // Build a HostList
     let hostlist = hostlist_parser(
@@ -47,7 +38,8 @@ fn main() {
     let mut assignmentlist: Vec<Assignment> = Vec::new();
 
     // This unwrap is safe since we checked before that the list is not empty.
-    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    //for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    for host in hostlist.hosts.as_ref().unwrap() {
     
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
@@ -70,11 +62,21 @@ fn main() {
                 }
             }
         };
+
+        let tasklist = tasklist_parser(
+            tasklist_get_from_file(&cliargs.tasklist),
+            &host
+            );
+    
+        if tasklist.tasks.is_empty() {
+            println!("No task in given list ({})", &cliargs.tasklist);
+            exit(0);
+        }
         
         assignmentlist.push(Assignment::from(
             correlationid.get_new_value().unwrap(), // This unwrap() is safe because initialization is checked before.
             RunningMode::Apply,
-            host.clone(),
+            host.address.clone(),
             ConnectionMode::Ssh2,
             authmode,
             HashMap::new(),
@@ -124,9 +126,9 @@ fn main() {
     
     // TODO : implement a better way to sort the output according to the order of the hosts in the HostList
     // aka sort resultslist in HostList order so we simply have to go through resultslist after that
-    for host in hostlist_get_all_hosts(&hostlist).unwrap() {
+    for host in hostlist.hosts.unwrap() {
         for assignment in resultslist.lock().unwrap().clone().into_iter() {
-            if host.eq(&assignment.host) {
+            if host.address.eq(&assignment.host) {
                 display_output(assignment);
             }
         }
