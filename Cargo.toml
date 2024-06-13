@@ -8,5 +8,5 @@ members = [
 	"lib/connection",
 	"lib/errors",
 	"scalable-version/controller",
-	"scalable-version/worker"
-]
+	"scalable-version/worker",
+	"lib/confparser"]
