@@ -13,6 +13,9 @@ A scalable and cloud-friendly automation / orchestration tool (worker component)
 %install
 mkdir -p %{buildroot}/usr/bin
 cp dux-worker %{buildroot}/usr/bin/
+mkdir -p %{buildroot}/etc/dux
+cp dux.conf %{buildroot}/etc/dux/
 
 %files
 /usr/bin/dux-worker
+/etc/dux/dux.conf

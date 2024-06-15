@@ -13,6 +13,9 @@ A scalable and cloud-friendly automation / orchestration tool (controller compon
 %install
 mkdir -p %{buildroot}/usr/bin
 cp dux-controller %{buildroot}/usr/bin/
+mkdir -p %{buildroot}/etc/dux
+cp dux.conf %{buildroot}/etc/dux/
 
 %files
 /usr/bin/dux-controller
+/etc/dux/dux.conf
