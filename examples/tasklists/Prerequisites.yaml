@@ -13,7 +13,7 @@
       with_sudo: true
       apt:
         state: present
-        package: git
+        package: "{{ packagename }}"
     
     - name: 4. Clean before clone
       command:
