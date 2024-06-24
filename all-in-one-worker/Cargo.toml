@@ -11,4 +11,5 @@ taskparser = { path = "../lib/taskparser" }
 cli = { path = "../lib/cli" }
 hostparser = { path = "../lib/hostparser" }
 connection = { path = "../lib/connection" }
+# confparser = { path = "../lib/confparser" }
 rayon = "1.10.0"

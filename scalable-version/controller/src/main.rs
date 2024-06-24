@@ -6,6 +6,7 @@
     // - Results display
 use std::collections::HashMap;
 use cli::prelude::*;
+use confparser::DuxConfig;
 use connection::prelude::*;
 use hostparser::*;
 use taskexec::prelude::*;
@@ -39,6 +40,9 @@ async fn main() {
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
+
+    // Get the configuration
+    let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Build a HostList
     let hostlist = hostlist_parser(
@@ -137,10 +141,10 @@ async fn main() {
         .ok();
 
     let connection = Connection::open(&OpenConnectionArguments::new(
-        "localhost",
-        5672,
-        "guest",
-        "guest",
+        conf.rabbitmq.rmq_address.as_str(),
+        conf.rabbitmq.rmq_port,
+        conf.rabbitmq.rmq_username.as_str(),
+        conf.rabbitmq.rmq_password.as_str(),
     ))
     .await
     .unwrap();

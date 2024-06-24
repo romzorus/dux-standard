@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 taskexec = { path = "../../lib/taskexec" }
 cli = { path = "../../lib/cli" }
+confparser = { path = "../../lib/confparser" }
 connection = { path = "../../lib/connection" }
 rayon = "1.10.0"
 amqprs = "1.5.1"

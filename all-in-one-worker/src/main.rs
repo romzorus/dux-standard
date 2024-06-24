@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 use cli::prelude::*;
+// Will be useful later but, for now, only contains RabbitMQ conf (not relevant for all-in-one)
+// use confparser::DuxConfig;
 use connection::prelude::*;
 use hostparser::*;
 use std::{path::PathBuf, process::exit, sync::Mutex};
@@ -12,6 +14,10 @@ fn main() {
 
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
+
+    // Will be useful later but, for now, only contains RabbitMQ conf (not relevant for all-in-one)
+    // Get the configuration
+    //let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Build a HostList
     let hostlist = hostlist_parser(

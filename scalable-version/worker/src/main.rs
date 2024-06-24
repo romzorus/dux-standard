@@ -1,4 +1,5 @@
 use cli::prelude::*;
+use confparser::{DuxConfig, RabbitMqConfig};
 use connection::prelude::*;
 use std::sync::Mutex;
 use taskexec::prelude::*;
@@ -31,6 +32,9 @@ fn main() {
     // Parse the CLI arguments
     let cliargs: CliArgs = parse_cli_args();
 
+    // Get the configuration
+    let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+    
     // Create runtime with the following principle:
     // If the number of threads to use is not specified, use 1 thread / CPU core
 
@@ -49,7 +53,7 @@ fn main() {
     let mut handles: Vec<JoinHandle<()>> = Vec::new();
 
     for _ in 0..(threads_number) {
-        let handle = rt.spawn(assignment_handler());
+        let handle = rt.spawn(assignment_handler(conf.rabbitmq.clone()));
         handles.push(handle);
     }
 
@@ -60,7 +64,7 @@ fn main() {
 }
 
 
-pub async fn assignment_handler() {
+pub async fn assignment_handler(rmq_conf: RabbitMqConfig) {
 
     // "Consume" Assignments from the Message Broker (MB)
     tracing_subscriber::registry()
@@ -70,10 +74,10 @@ pub async fn assignment_handler() {
         .ok();
 
     let connection = Connection::open(&OpenConnectionArguments::new(
-        "localhost",
-        5672,
-        "guest",
-        "guest",
+        rmq_conf.rmq_address.as_str(),
+        rmq_conf.rmq_port,
+        rmq_conf.rmq_username.as_str(),
+        rmq_conf.rmq_password.as_str(),
     ))
     .await
     .unwrap();

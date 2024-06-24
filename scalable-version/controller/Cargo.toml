@@ -9,6 +9,7 @@ edition = "2021"
 taskexec = { path = "../../lib/taskexec" }
 taskparser = { path = "../../lib/taskparser" }
 cli = { path = "../../lib/cli" }
+confparser = { path = "../../lib/confparser" }
 hostparser = { path = "../../lib/hostparser" }
 connection = { path = "../../lib/connection" }
 amqprs = "1.5.1"
