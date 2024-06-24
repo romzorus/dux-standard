@@ -2,7 +2,7 @@ use config::{self, Config, File, FileFormat};
 use serde::Deserialize;
 use errors::Error;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct RabbitMqConfig {
     pub rmq_address: String,
     pub rmq_port: u16,
