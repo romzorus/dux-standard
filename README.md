@@ -150,7 +150,7 @@ Open to suggestions, feedback, requests and any contribution ! Let's talk [here]
 
 ## Todo list
 - [x] All: introduce variabilization in TaskLists
-- [ ] All: introduce configuration files
+- [x] All: introduce configuration files
 - [ ] All: optimization (lots of `clone` out there)
 - [ ] All: error handling (lots of `unwrap` out there)
 - [ ] HostList: introduce aliases
@@ -169,6 +169,7 @@ Open to suggestions, feedback, requests and any contribution ! Let's talk [here]
 - [ ] log generation : what is applied when on what, syslog interaction, ability to generate JSON content (for log aggregators for example)
 - [ ] mode pass-on-demand (TaskList applied only when asked) VS watcher (TaskList applied on a regular basis by the Controller/Worker) VS agent (exec with an Assignment embedded in Controlled Host which regularly applies it on localhost)
 - [ ] agent version : dux running on a Host as a service, regularly retrieving TaskList from a local file, a remote host or a URL (git repo) and applying it to localhost -> pull mode : the controlled Host are actually the ones that fetch TaskList and apply it to themselves, instead of waiting for a Worker node to take care of them (push)
+- [ ] Scalable: introduce end-to-end encryption [(Ockam ?)](https://github.com/build-trust/ockam)
 
 ## License
 Licensed under the Apache License, Version 2.0 (the "License");
