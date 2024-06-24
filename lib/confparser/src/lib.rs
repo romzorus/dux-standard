@@ -32,40 +32,40 @@ impl DuxConfig {
             rabbitmq: RabbitMqConfig::default()
         }
     }
-}
 
-pub fn parse_config_file(path: Option<String>) -> Result<DuxConfig, Error> {
+    pub fn from(path: Option<String>) -> Result<DuxConfig, Error> {
 
-    let config_file_path = match path {
-        Some(content) => {
-            content
-        }
-        None => {
-            "/etc/dux/dux.conf".to_string()
-        }
-    };
+        let config_file_path = match path {
+            Some(content) => {
+                content
+            }
+            None => {
+                "/etc/dux/dux.conf".to_string()
+            }
+        };
 
-    let config_builder = Config::builder()
-    .add_source(File::new(config_file_path.as_str(), FileFormat::Ini))
-    .build();
+        let config_builder = Config::builder()
+        .add_source(File::new(config_file_path.as_str(), FileFormat::Ini))
+        .build();
 
-    match config_builder {
-        Ok(config_content) => {
-            let dux_config = config_content.try_deserialize::<DuxConfig>();
+        match config_builder {
+            Ok(config_content) => {
+                let dux_config = config_content.try_deserialize::<DuxConfig>();
 
-            match dux_config {
-                Ok(config) => {
-                    Ok(config)
-                }
-                Err(e) => {
-                    // TODO : in this case, the user provided a config file but the parsing failed -> use default values instead of stopping everythin ?
-                    Err(Error::FailureToParseContent(format!("{e}")))
+                match dux_config {
+                    Ok(config) => {
+                        Ok(config)
+                    }
+                    Err(e) => {
+                        // TODO : in this case, the user provided a config file but the parsing failed -> use default values instead of stopping everythin ?
+                        Err(Error::FailureToParseContent(format!("{e}")))
+                    }
                 }
             }
-        }
-        Err(e) => {
-            // TODO : Log some warning with 'e' content
-            Ok(DuxConfig::default())
+            Err(e) => {
+                // TODO : Log some warning with 'e' content
+                Ok(DuxConfig::default())
+            }
         }
     }
 }
