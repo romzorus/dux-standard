@@ -18,7 +18,7 @@ build-duxtool-for-debian:
    - mkdir -p building/deb/duxtool/usr/bin
    - mkdir -p building/deb/duxtool/etc/dux
    - cp target/release/all-in-one-worker building/deb/duxtool/usr/bin/duxtool
-   - cp building/dux.conf building/deb/duxtool/etc/dux/dux.conf
+   - cp building/conf/dux.conf.all_in_one building/deb/duxtool/etc/dux/dux.conf
    - chmod -R 755 building/deb/duxtool
    - dpkg-deb --build building/deb/duxtool
    - mv building/deb/duxtool.deb building/deb/duxtool-$DUX_VERSION.deb
@@ -35,7 +35,7 @@ build-duxtool-for-fedora:
    - cp building/rpm/dux.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/duxtool-$DUX_VERSION-0.x86_64/
    - cp target/release/all-in-one-worker ~/rpmbuild/BUILD/duxtool
-   - cp building/dux.conf ~/rpmbuild/BUILD
+   - cp building/conf/dux.conf.all_in_one ~/rpmbuild/BUILD
    - rpmbuild -bb ~/rpmbuild/SPECS/dux.spec
    - cp ~/rpmbuild/RPMS/x86_64/duxtool-$DUX_VERSION-0.x86_64.rpm duxtool-$DUX_VERSION.rpm
   artifacts:
@@ -51,7 +51,7 @@ build-dux-controller-for-debian:
    - mkdir -p building/deb/dux-controller/usr/bin
    - mkdir -p building/deb/duxtool/etc/dux
    - cp target/release/controller building/deb/dux-controller/usr/bin/dux-controller
-   - cp building/dux.conf building/deb/duxtool/etc/dux/dux.conf
+   - cp building/conf/dux.conf.controller building/deb/duxtool/etc/dux/dux.conf
    - chmod -R 755 building/deb/dux-controller
    - dpkg-deb --build building/deb/dux-controller
    - mv building/deb/dux-controller.deb building/deb/dux-controller-$DUX_VERSION.deb
@@ -68,7 +68,7 @@ build-dux-controller-for-fedora:
    - cp building/rpm/dux-controller.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/dux-controller-$DUX_VERSION-0.x86_64/
    - cp target/release/controller ~/rpmbuild/BUILD/dux-controller
-   - cp building/dux.conf ~/rpmbuild/BUILD
+   - cp building/conf/dux.conf.controller ~/rpmbuild/BUILD
    - rpmbuild -bb ~/rpmbuild/SPECS/dux-controller.spec
    - cp ~/rpmbuild/RPMS/x86_64/dux-controller-$DUX_VERSION-0.x86_64.rpm dux-controller-$DUX_VERSION.rpm
   artifacts:
@@ -84,7 +84,7 @@ build-dux-worker-for-debian:
    - mkdir -p building/deb/dux-worker/usr/bin
    - mkdir -p building/deb/duxtool/etc/dux
    - cp target/release/worker building/deb/dux-worker/usr/bin/dux-worker
-   - cp building/dux.conf building/deb/duxtool/etc/dux/dux.conf
+   - cp building/conf/dux.conf.worker building/deb/duxtool/etc/dux/dux.conf
    - chmod -R 755 building/deb/dux-worker
    - dpkg-deb --build building/deb/dux-worker
    - mv building/deb/dux-worker.deb building/deb/dux-worker-$DUX_VERSION.deb
@@ -101,7 +101,7 @@ build-dux-worker-for-fedora:
    - cp building/rpm/dux-worker.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/dux-worker-$DUX_VERSION-0.x86_64/
    - cp target/release/worker ~/rpmbuild/BUILD/dux-worker
-   - cp building/dux.conf ~/rpmbuild/BUILD
+   - cp building/conf/dux.conf.worker ~/rpmbuild/BUILD
    - rpmbuild -bb ~/rpmbuild/SPECS/dux-worker.spec
    - cp ~/rpmbuild/RPMS/x86_64/dux-worker-$DUX_VERSION-0.x86_64.rpm dux-worker-$DUX_VERSION.rpm
   artifacts:
