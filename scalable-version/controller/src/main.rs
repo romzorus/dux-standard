@@ -5,12 +5,6 @@
     // - Assignments production
     // - Results display
 use std::collections::HashMap;
-use cli::prelude::*;
-use confparser::DuxConfig;
-use connection::prelude::*;
-use hostparser::*;
-use taskexec::prelude::*;
-use taskparser::prelude::*;
 use std::path::PathBuf;
 use std::process::exit;
 use log::{debug, error, log_enabled, info, Level, warn};
@@ -29,6 +23,8 @@ use tokio::time::Duration;
 use tracing_subscriber::{fmt, prelude::*};
 use tracing_subscriber::filter::EnvFilter;
 
+use duxcore::prelude::*;
+
 #[tokio::main]
 async fn main() {
     let env = Env::default()
@@ -36,21 +32,21 @@ async fn main() {
 
     env_logger::init_from_env(env);
 
-    welcome_message_controller();
+    welcome_message_scalable_controller();
 
     // Parse the CLI arguments
-    let cliargs: CliArgs = parse_cli_args();
+    let cliargs: CliArgsScalableController = parse_cli_args_scalable_controller().unwrap();
 
     // Get the configuration
-    let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+    let conf = DuxConfigScalableController::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Build a HostList
     let hostlist = hostlist_parser(
-        hostlist_get_from_file(&cliargs.hostlist)
+        hostlist_get_from_file(&cliargs.hostlist.as_ref().unwrap())
     );
 
     if hostlist_get_all_hosts(&hostlist).is_none() {
-        warn!("No hosts in given list ({})", &cliargs.hostlist);
+        warn!("No hosts in given list ({})", &cliargs.hostlist.as_ref().unwrap());
         exit(0);
     }
 
@@ -74,7 +70,7 @@ async fn main() {
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
                 Ssh2AuthMode::SshKeys((
-                    cliargs.user.clone(),
+                    cliargs.user.clone().unwrap(),
                     PathBuf::from(privatekeypath)
                 ))
             }
@@ -83,7 +79,7 @@ async fn main() {
                 match cliargs.password.clone() {
                     Some(pwd) => {
                         Ssh2AuthMode::UsernamePassword(
-                            Credentials::from(cliargs.user.clone(), pwd)
+                            Credentials::from(cliargs.user.clone().unwrap(), pwd)
                         )
                     }
                     None => {
@@ -96,12 +92,12 @@ async fn main() {
 
         // Build a TaskList (YAML is assumed for now)
         let tasklist = tasklist_parser(
-            tasklist_get_from_file(&cliargs.tasklist),
+            tasklist_get_from_file(&cliargs.tasklist.as_ref().unwrap()),
             &host
             );
         
         if tasklist.tasks.is_empty() {
-            warn!("No task in given list ({})", &cliargs.tasklist);
+            warn!("No task in given list ({})", &cliargs.tasklist.as_ref().unwrap());
             exit(0);
         }
 
@@ -118,7 +114,7 @@ async fn main() {
             HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),
-            TaskListResult::new(),
+            ResultList::new(),
             AssignmentFinalStatus::Unset
         ));
     }

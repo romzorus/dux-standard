@@ -1,19 +1,15 @@
 use std::collections::HashMap;
-use cli::prelude::*;
-// Will be useful later but, for now, only contains RabbitMQ conf (not relevant for all-in-one)
-// use confparser::DuxConfig;
-use connection::prelude::*;
-use hostparser::*;
 use std::{path::PathBuf, process::exit, sync::Mutex};
-use taskexec::prelude::*;
-use taskparser::prelude::*;
+
+use duxcore::prelude::*;
+
 
 fn main() {
 
-    welcome_message();
+    welcome_message_standard();
 
     // Parse the CLI arguments
-    let cliargs: CliArgs = parse_cli_args();
+    let cliargs: CliArgsStandard = parse_cli_args_standard().unwrap();
 
     // Will be useful later but, for now, only contains RabbitMQ conf (not relevant for all-in-one)
     // Get the configuration
@@ -21,11 +17,11 @@ fn main() {
     
     // Build a HostList
     let hostlist = hostlist_parser(
-        hostlist_get_from_file(&cliargs.hostlist)
+        hostlist_get_from_file(&cliargs.hostlist.as_ref().unwrap())
     );
 
     if hostlist_get_all_hosts(&hostlist).is_none() {
-        println!("No hosts in given list ({})", &cliargs.hostlist);
+        println!("No hosts in given list ({})", &cliargs.hostlist.unwrap());
         exit(0);
     }
 
@@ -50,7 +46,7 @@ fn main() {
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
                 Ssh2AuthMode::SshKeys((
-                    cliargs.user.clone(),
+                    cliargs.user.clone().unwrap(),
                     PathBuf::from(privatekeypath)
                 ))
             }
@@ -59,7 +55,7 @@ fn main() {
                 match cliargs.password.clone() {
                     Some(pwd) => {
                         Ssh2AuthMode::UsernamePassword(
-                            Credentials::from(cliargs.user.clone(), pwd)
+                            Credentials::from(cliargs.user.clone().unwrap(), pwd)
                         )
                     }
                     None => {
@@ -70,12 +66,12 @@ fn main() {
         };
 
         let tasklist = tasklist_parser(
-            tasklist_get_from_file(&cliargs.tasklist),
+            tasklist_get_from_file(&cliargs.tasklist.as_ref().unwrap()),
             &host
             );
     
         if tasklist.tasks.is_empty() {
-            println!("No task in given list ({})", &cliargs.tasklist);
+            println!("No task in given list ({})", &cliargs.tasklist.unwrap());
             exit(0);
         }
         
@@ -88,7 +84,7 @@ fn main() {
             HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),
-            TaskListResult::new(),
+            ResultList::new(),
             AssignmentFinalStatus::Unset
         ));
     }

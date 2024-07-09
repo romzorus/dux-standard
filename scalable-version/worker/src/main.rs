@@ -1,9 +1,3 @@
-use cli::prelude::*;
-use confparser::{DuxConfig, RabbitMqConfig};
-use connection::prelude::*;
-use std::sync::Mutex;
-use taskexec::prelude::*;
-
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
     channel::{
@@ -20,20 +14,22 @@ use tracing_subscriber::filter::EnvFilter;
 use log::{debug, error, log_enabled, info, Level};
 use env_logger::Env;
 
+use duxcore::prelude::*;
+
 fn main() {
     let env = Env::default()
     .filter_or("INFO", "info");
 
     env_logger::init_from_env(env);
 
-    welcome_message_worker();
+    welcome_message_scalable_worker();
 
 
     // Parse the CLI arguments
-    let cliargs: CliArgs = parse_cli_args();
+    let cliargs: CliArgsScalableWorker = parse_cli_args_scalable_worker().unwrap();
 
     // Get the configuration
-    let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+    let conf = DuxConfigScalableWorker::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Create runtime with the following principle:
     // If the number of threads to use is not specified, use 1 thread / CPU core
