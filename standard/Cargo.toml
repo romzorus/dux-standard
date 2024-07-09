@@ -1,5 +1,5 @@
 [package]
-name = "all-in-one-worker"
+name = "standard"
 version = "0.1.0"
 edition = "2021"
 
