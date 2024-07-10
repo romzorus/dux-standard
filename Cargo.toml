@@ -1,5 +1,5 @@
 [workspace]
 members = [
 	"standard",
-	"scalable-version/controller",
-	"scalable-version/worker"]
+	"scalable-controller",
+	"scalable-worker"]

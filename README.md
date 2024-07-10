@@ -13,7 +13,7 @@ It comes in 3 versions :
 # Scalable version
 **Overview**
 <div align="center">
-<img src="scalable-version/scalable-illustration.png" width="100%">
+<img src="img/scalable-illustration.png" width="100%">
 </div>
 A worker node can be either a physical/virtual machine or a container. To increase the capacity of the system, just increase the number of worker nodes or their ability to multithread (number of CPU cores basically). 
 
