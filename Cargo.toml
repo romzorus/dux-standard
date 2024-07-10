@@ -1,12 +1,5 @@
 [workspace]
 members = [
-	"lib/taskexec",
-	"lib/taskparser",
-	"lib/cli",
 	"standard",
-	"lib/hostparser",
-	"lib/connection",
-	"lib/errors",
 	"scalable-version/controller",
-	"scalable-version/worker",
-	"lib/confparser"]
+	"scalable-version/worker"]
