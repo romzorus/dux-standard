@@ -3,7 +3,7 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
 
 variables:
-  DUX_VERSION: "0.0.11"
+  DUX_VERSION: "0.1.0"
 
 stages:
   - build
@@ -17,8 +17,8 @@ build-duxtool-for-debian:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/duxtool/DEBIAN/control
    - mkdir -p building/deb/duxtool/usr/bin
    - mkdir -p building/deb/duxtool/etc/dux
-   - cp target/release/all-in-one-worker building/deb/duxtool/usr/bin/duxtool
-   - cp building/conf/dux.conf.all_in_one building/deb/duxtool/etc/dux/dux.conf
+   - cp target/release/standard building/deb/duxtool/usr/bin/duxtool
+   - cp building/conf/dux.conf.standard building/deb/duxtool/etc/dux/dux.conf
    - chmod -R 755 building/deb/duxtool
    - dpkg-deb --build building/deb/duxtool
    - mv building/deb/duxtool.deb building/deb/duxtool-$DUX_VERSION.deb
@@ -34,8 +34,8 @@ build-duxtool-for-fedora:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux.spec
    - cp building/rpm/dux.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/duxtool-$DUX_VERSION-0.x86_64/
-   - cp target/release/all-in-one-worker ~/rpmbuild/BUILD/duxtool
-   - cp building/conf/dux.conf.all_in_one ~/rpmbuild/BUILD/dux.conf
+   - cp target/release/standard ~/rpmbuild/BUILD/duxtool
+   - cp building/conf/dux.conf.standard ~/rpmbuild/BUILD/dux.conf
    - rpmbuild -bb ~/rpmbuild/SPECS/dux.spec
    - cp ~/rpmbuild/RPMS/x86_64/duxtool-$DUX_VERSION-0.x86_64.rpm duxtool-$DUX_VERSION.rpm
   artifacts:
@@ -50,7 +50,7 @@ build-dux-controller-for-debian:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux-controller/DEBIAN/control
    - mkdir -p building/deb/dux-controller/usr/bin
    - mkdir -p building/deb/dux-controller/etc/dux
-   - cp target/release/controller building/deb/dux-controller/usr/bin/dux-controller
+   - cp target/release/scalable-controller building/deb/dux-controller/usr/bin/dux-controller
    - cp building/conf/dux.conf.controller building/deb/dux-controller/etc/dux/dux.conf
    - chmod -R 755 building/deb/dux-controller
    - dpkg-deb --build building/deb/dux-controller
@@ -67,7 +67,7 @@ build-dux-controller-for-fedora:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux-controller.spec
    - cp building/rpm/dux-controller.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/dux-controller-$DUX_VERSION-0.x86_64/
-   - cp target/release/controller ~/rpmbuild/BUILD/dux-controller
+   - cp target/release/scalable-controller ~/rpmbuild/BUILD/dux-controller
    - cp building/conf/dux.conf.controller ~/rpmbuild/BUILD/dux.conf
    - rpmbuild -bb ~/rpmbuild/SPECS/dux-controller.spec
    - cp ~/rpmbuild/RPMS/x86_64/dux-controller-$DUX_VERSION-0.x86_64.rpm dux-controller-$DUX_VERSION.rpm
@@ -83,7 +83,7 @@ build-dux-worker-for-debian:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux-worker/DEBIAN/control
    - mkdir -p building/deb/dux-worker/usr/bin
    - mkdir -p building/deb/dux-worker/etc/dux
-   - cp target/release/worker building/deb/dux-worker/usr/bin/dux-worker
+   - cp target/release/scalable-worker building/deb/dux-worker/usr/bin/dux-worker
    - cp building/conf/dux.conf.worker building/deb/dux-worker/etc/dux/dux.conf
    - chmod -R 755 building/deb/dux-worker
    - dpkg-deb --build building/deb/dux-worker
@@ -100,7 +100,7 @@ build-dux-worker-for-fedora:
    - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux-worker.spec
    - cp building/rpm/dux-worker.spec ~/rpmbuild/SPECS
    - mkdir ~/rpmbuild/BUILDROOT/dux-worker-$DUX_VERSION-0.x86_64/
-   - cp target/release/worker ~/rpmbuild/BUILD/dux-worker
+   - cp target/release/scalable-worker ~/rpmbuild/BUILD/dux-worker
    - cp building/conf/dux.conf.worker ~/rpmbuild/BUILD/dux.conf
    - rpmbuild -bb ~/rpmbuild/SPECS/dux-worker.spec
    - cp ~/rpmbuild/RPMS/x86_64/dux-worker-$DUX_VERSION-0.x86_64.rpm dux-worker-$DUX_VERSION.rpm
