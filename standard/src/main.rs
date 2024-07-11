@@ -74,13 +74,13 @@ fn main() {
             println!("No task in given list ({})", &cliargs.tasklist.unwrap());
             exit(0);
         }
-        
+
+        // SSH2 is assumed for now.
         assignmentlist.push(Assignment::from(
             correlationid.get_new_value().unwrap(), // This unwrap() is safe because initialization is checked before.
             RunningMode::Apply,
             host.address.clone(),
-            ConnectionMode::Ssh2,
-            authmode,
+            HostHandlingInfo::from(ConnectionMode::Ssh2, host.address.clone(), ConnectionDetails::Ssh2(Ssh2ConnectionDetails::from(host.address.clone(), authmode))),
             HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),
@@ -108,11 +108,7 @@ fn main() {
                 let resultslist = &resultslist;
                 s.spawn(move |_| {
 
-                    let mut hosthandler = HostHandler::from(
-                        assignment.connectionmode.clone(),
-                        assignment.host.clone(),
-                        assignment.authmode.clone()
-                    );
+                    let mut hosthandler = HostHandler::from(&assignment.hosthandlinginfo).unwrap();
 
                     let _ = hosthandler.init();
 
