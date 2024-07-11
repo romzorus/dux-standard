@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# duxcore = "0.1.0"
-duxcore = { path = "../../duxcore"}
+duxcore = { git = "https://gitlab.com/dux-tool/duxcore.git", branch = "main"}
 rayon = "1.10.0"
 
