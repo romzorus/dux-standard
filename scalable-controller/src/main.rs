@@ -102,6 +102,7 @@ async fn main() {
         }
 
         // This unwrap() is safe because initialization is checked before.
+        // SSH2 is assumed for now.
         let correlationid = correlationid.get_new_value().unwrap();
         correlationidlist.push(correlationid.clone());
         
@@ -109,8 +110,7 @@ async fn main() {
             correlationid,
             RunningMode::Apply,
             host.address.clone(),
-            ConnectionMode::Ssh2,
-            authmode,
+            HostHandlingInfo::from(ConnectionMode::Ssh2, host.address.clone(), ConnectionDetails::Ssh2(Ssh2ConnectionDetails::from(host.address.clone(), authmode))),
             HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),

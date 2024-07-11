@@ -127,11 +127,7 @@ pub async fn assignment_handler(rmq_conf: RabbitMqConfig) {
 
         info!("{} : Assignment received", assignment.correlationid.clone());
 
-        let mut hosthandler = HostHandler::from(
-            assignment.connectionmode.clone(),
-            assignment.host.clone(),
-            assignment.authmode.clone()
-        );
+        let mut hosthandler = HostHandler::from(&assignment.hosthandlinginfo).unwrap();
 
         let _ = hosthandler.init();
 
