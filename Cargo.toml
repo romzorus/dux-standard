@@ -2,4 +2,5 @@
 members = [
 	"standard",
 	"scalable-controller",
-	"scalable-worker"]
+	"scalable-worker",
+	"agent"]
