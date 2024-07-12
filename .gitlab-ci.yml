@@ -108,6 +108,39 @@ build-dux-worker-for-fedora:
     paths:
     - dux-worker-$DUX_VERSION.rpm
 
+build-dux-agent-for-debian:
+  stage: build
+  image: romzorus/deb-rust-build:v1.0
+  script:
+   - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux-agent/DEBIAN/control
+   - mkdir -p building/deb/dux-agent/usr/bin
+   - mkdir -p building/deb/dux-agent/etc/dux-agent
+   - cp target/release/agent building/deb/dux-agent/usr/bin/dux-agent
+   - cp building/conf/dux.conf.agent building/deb/duxtool/etc/dux-agent/dux-agent.conf
+   - chmod -R 755 building/deb/dux-agent
+   - dpkg-deb --build building/deb/dux-agent
+   - mv building/deb/dux-agent.deb building/deb/dux-agent-$DUX_VERSION.deb
+  artifacts:
+    paths:
+    - building/deb/dux-agent-$DUX_VERSION.deb
+
+build-dux-agent-for-fedora:
+  stage: build
+  image: romzorus/rpm-rust-build:v1.0
+  script:
+   - cargo build --release
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/rpm/dux-agent.spec
+   - cp building/rpm/dux-agent.spec ~/rpmbuild/SPECS
+   - mkdir ~/rpmbuild/BUILDROOT/dux-agent-$DUX_VERSION-0.x86_64/
+   - cp target/release/agent ~/rpmbuild/BUILD/dux-agent
+   - cp building/conf/dux.conf.agent ~/rpmbuild/BUILD/dux-agent.conf
+   - rpmbuild -bb ~/rpmbuild/SPECS/dux-agent.spec
+   - cp ~/rpmbuild/RPMS/x86_64/dux-agent-$DUX_VERSION-0.x86_64.rpm dux-agent-$DUX_VERSION.rpm
+  artifacts:
+    paths:
+    - dux-agent-$DUX_VERSION.rpm
+
 upload-to-package-registry:
   stage: deploy
   script:
@@ -117,5 +150,7 @@ upload-to-package-registry:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-controller-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-controller/$DUX_VERSION/dux-controller-$DUX_VERSION.rpm"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-worker-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-worker/$DUX_VERSION/dux-worker-$DUX_VERSION.deb"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-worker-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-worker/$DUX_VERSION/dux-worker-$DUX_VERSION.rpm"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-agent-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-agent/$DUX_VERSION/dux-agent-$DUX_VERSION.deb"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-agent-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux-agent/$DUX_VERSION/dux-agent-$DUX_VERSION.rpm"'
   rules:
    - if: $CI_COMMIT_BRANCH == "main"
