@@ -117,7 +117,7 @@ build-dux-agent-for-debian:
    - mkdir -p building/deb/dux-agent/usr/bin
    - mkdir -p building/deb/dux-agent/etc/dux-agent
    - cp target/release/agent building/deb/dux-agent/usr/bin/dux-agent
-   - cp building/conf/dux.conf.agent building/deb/duxtool/etc/dux-agent/dux-agent.conf
+   - cp building/conf/dux.conf.agent building/deb/dux-agent/etc/dux-agent/dux-agent.conf
    - chmod -R 755 building/deb/dux-agent
    - dpkg-deb --build building/deb/dux-agent
    - mv building/deb/dux-agent.deb building/deb/dux-agent-$DUX_VERSION.deb
