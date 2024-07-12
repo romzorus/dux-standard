@@ -9,7 +9,7 @@ Instead of having one big automation tool (meaning configuration management or o
 This repository contains 3 proof of concept AKA examples of how the [duxcore](https://crates.io/crates/duxcore) crate can be used :
 - scalable version : 3 components (Controller Node / Message Broker / Worker Node)
 - standard version : 1 executable which does everything (run TaskList on a Host List)
-- agent version (coming soon): dux installed as a service on a host and regularly enforcing a TaskList which can be a local/remote file or a URL (pointing to a git repository for example)
+- agent version : dux installed as a service on a host and regularly enforcing a TaskList which can be a local/remote file or a URL (pointing to a git repository for example)
 
 Other possibilities :
   - use [Apache Kafka](https://kafka.apache.org/) instead of [RabbitMQ](https://www.rabbitmq.com/)
