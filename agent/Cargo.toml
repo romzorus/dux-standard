@@ -1,7 +1,0 @@
-[package]
-name = "agent"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-duxcore = { git = "https://gitlab.com/dux-tool/duxcore.git", branch = "main"}
