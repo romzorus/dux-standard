@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::process::exit;
-use duxcore::cli::args::versions::agent::CliArgsAgent;
 use duxcore::prelude::*;
 
 fn main() {
@@ -9,8 +8,33 @@ fn main() {
 
     let cliargs: CliArgsAgent = parse_cli_args_agent().unwrap();
 
+    // Get the configuration
+    let conf = DuxConfigAgent::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+
+    // Only local method is handled for now. Http and Git coming soon.
+    let local_tasklist_path = match cliargs.tasklist.clone() {
+        Some(value) => { value }
+        None => {
+            match conf.source.method {
+                Some(value) => {
+                    match value.as_str() {
+                        "local" => {
+                            conf.source.path.unwrap()
+                        }
+                        _ => {
+                            panic!("Source type value not recognized/handled.")
+                        }
+                    }
+                }
+                None => {
+                    panic!("Missing source type field")
+                }
+            }
+        }
+    };
+
     let tasklist = tasklist_parser(
-        tasklist_get_from_file(&cliargs.tasklist.as_ref().unwrap()),
+        tasklist_get_from_file(local_tasklist_path.as_str()),
         &Host::from_string("localhost".to_string())
         );
 
