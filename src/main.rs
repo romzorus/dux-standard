@@ -3,6 +3,11 @@ use std::{path::PathBuf, process::exit, sync::Mutex};
 
 use duxcore::prelude::*;
 
+mod cliargs;
+mod conf;
+
+use crate::cliargs::{parse_cli_args_standard, CliArgsStandard};
+use crate::conf::DuxConfigStandard;
 
 fn main() {
 
@@ -11,9 +16,8 @@ fn main() {
     // Parse the CLI arguments
     let cliargs: CliArgsStandard = parse_cli_args_standard().unwrap();
 
-    // Will be useful later but, for now, only contains RabbitMQ conf (not relevant for all-in-one)
-    // Get the configuration
-    //let conf = DuxConfig::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+    // Get the configuration (not used for now)
+    let _conf = DuxConfigStandard::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Build a HostList
     let hostlist = hostlist_parser(
@@ -131,4 +135,17 @@ fn main() {
             }
         }
     }
+}
+
+pub fn welcome_message_standard() {
+    println!(
+        r"
+    ██████╗ ██╗   ██╗██╗  ██╗
+    ██╔══██╗██║   ██║╚═███╔═╝
+    ██║  ██║██║   ██║  ███║ 
+    ██████╔╝╚██████╔╝██╔╝ ██╗
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
+    🆂🆃🅰🅽🅳🅰🆁🅳
+"
+    );
 }
