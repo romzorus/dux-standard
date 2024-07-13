@@ -14,13 +14,13 @@ build-dux-for-debian:
   image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release
-   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/DEBIAN/control
-   - mkdir -p building/deb/usr/bin
-   - mkdir -p building/deb/etc/dux
-   - cp target/release/standard building/deb/usr/bin/dux
-   - cp building/dux.conf building/deb/etc/dux/dux.conf
-   - chmod -R 755 building/deb
-   - dpkg-deb --build building/deb
+   - sed -i "s/PLACEHOLDER_FOR_VERSION/$DUX_VERSION/g" building/deb/dux/DEBIAN/control
+   - mkdir -p building/deb/dux/usr/bin
+   - mkdir -p building/deb/dux/etc/dux
+   - cp target/release/standard building/deb/dux/usr/bin/dux
+   - cp building/dux.conf building/deb/dux/etc/dux/dux.conf
+   - chmod -R 755 building/deb/dux
+   - dpkg-deb --build building/deb/dux
    - mv building/deb/dux.deb building/deb/dux-$DUX_VERSION.deb
   artifacts:
     paths:
