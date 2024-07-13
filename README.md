@@ -7,9 +7,9 @@
 Instead of having one big automation tool (meaning configuration management or orchestration tool) trying to handle all scenarios (be scalable, performant, handle local and remote hosts through this protocol or this one, be compliant with this security standard and this one...), we prefer to build one flexible automation *engine* (the [duxcore](https://crates.io/crates/duxcore) crate) and make it as easy as possible to embed in a codebase already adapted to one's specific need.
 
 This repository contains 3 proof of concept AKA examples of how the [duxcore](https://crates.io/crates/duxcore) crate can be used :
-- scalable version : 3 components (Controller Node / Message Broker / Worker Node)
-- standard version : 1 executable which does everything (run TaskList on a Host List)
-- agent version (coming soon): dux installed as a service on a host and regularly enforcing a TaskList which can be a local/remote file or a URL (pointing to a git repository for example)
+- standard version (this one): 1 executable which does everything (run TaskList on a Host List)
+- scalable version : 3 components ([Controller Node](https://gitlab.com/dux-tool/dux-scalable-controller) / Message Broker / [Worker Node](https://gitlab.com/dux-tool/dux-scalable-worker))
+- [agent version](https://gitlab.com/dux-tool/dux-agent) : dux installed as a service on a host and regularly enforcing a TaskList which can be a local/remote file or a URL (pointing to a git repository for example)
 
 Other possibilities :
   - use [Apache Kafka](https://kafka.apache.org/) instead of [RabbitMQ](https://www.rabbitmq.com/)
