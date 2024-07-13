@@ -19,8 +19,8 @@ build-dux-for-debian:
    - mkdir -p building/deb/etc/dux
    - cp target/release/standard building/deb/usr/bin/dux
    - cp building/dux.conf building/deb/etc/dux/dux.conf
-   - chmod -R 755 building/deb/dux
-   - dpkg-deb --build building/deb/dux
+   - chmod -R 755 building/deb
+   - dpkg-deb --build building/deb
    - mv building/deb/dux.deb building/deb/dux-$DUX_VERSION.deb
   artifacts:
     paths:

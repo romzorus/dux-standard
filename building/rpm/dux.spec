@@ -1,4 +1,4 @@
-Name:       duxtool
+Name:       dux
 Version:    PLACEHOLDER_FOR_VERSION
 Release:    0
 Summary:    Automation tool written in Rust
@@ -17,5 +17,5 @@ mkdir -p %{buildroot}/etc/dux
 cp dux.conf %{buildroot}/etc/dux/
 
 %files
-/usr/bin/duxtool
+/usr/bin/dux
 /etc/dux/dux.conf
