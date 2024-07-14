@@ -44,7 +44,7 @@ build-dux-for-fedora:
 
 upload-to-package-registry:
   stage: deploy
-  image: romzorus/deb-rust-build:v1.0
+  image: curlimages/curl:8.8.0
   script:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux/$DUX_VERSION/dux-$DUX_VERSION.deb"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux/$DUX_VERSION/dux-$DUX_VERSION.rpm"'
