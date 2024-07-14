@@ -9,9 +9,9 @@ Instead of having one big automation tool (meaning configuration management or o
 This repository contains one implementation example : the standard version. It is the simplest use case : one binary on a host which applies configurations (task lists) to remote hosts.
 
 <div align="center">
-<img src="img/standard-illustration.png" width="70%">
+<img src="img/standard-illustration.png" width="60%">
 </div>
-Classic use case : a binary running on a Host and reaching out to other Hosts to apply some configuration (AKA Task list)
+
 
 # Usage
 ~~~
