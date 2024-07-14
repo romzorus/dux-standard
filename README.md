@@ -1,4 +1,4 @@
-# Dux : automation tools written in Rust
+# Dux : standard implementation
 <div align="center">
 <img src="img/dux.png" width="25%">
 </div>
