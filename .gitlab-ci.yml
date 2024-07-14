@@ -9,11 +9,10 @@ stages:
   - build
   - deploy
 
-tags:
-  - dux
-
 build-dux-for-debian:
   stage: build
+  tags:
+    - dux
   image: romzorus/deb-rust-build:v1.0
   script:
    - cargo build --release
@@ -31,6 +30,8 @@ build-dux-for-debian:
 
 build-dux-for-fedora:
   stage: build
+  tags:
+    - dux
   image: romzorus/rpm-rust-build:v1.0
   script:
    - cargo build --release
@@ -47,6 +48,8 @@ build-dux-for-fedora:
 
 upload-to-package-registry:
   stage: deploy
+  tags:
+    - dux
   script:
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file building/deb/dux-$DUX_VERSION.deb "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux/$DUX_VERSION/dux-$DUX_VERSION.deb"'
     - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file dux-$DUX_VERSION.rpm "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/dux/$DUX_VERSION/dux-$DUX_VERSION.rpm"'
