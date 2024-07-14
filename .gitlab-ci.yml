@@ -1,6 +1,6 @@
 workflow:
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "runner"
 
 variables:
   DUX_VERSION: "0.1.0"
@@ -8,6 +8,9 @@ variables:
 stages:
   - build
   - deploy
+
+tags:
+  - dux
 
 build-dux-for-debian:
   stage: build
