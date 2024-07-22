@@ -49,7 +49,7 @@ fn main() {
     
         let authmode = match &cliargs.key {
             Some(privatekeypath) => {
-                Ssh2AuthMode::SshKeys((
+                Ssh2AuthMode::KeyFile((
                     cliargs.user.clone().unwrap(),
                     PathBuf::from(privatekeypath)
                 ))
