@@ -10,15 +10,15 @@ use crate::cliargs::{parse_cli_args_standard, CliArgsStandard};
 use crate::conf::DuxConfigStandard;
 
 fn main() {
-
     welcome_message_standard();
 
     // Parse the CLI arguments
     let cliargs: CliArgsStandard = parse_cli_args_standard().unwrap();
 
     // Get the configuration (not used for now)
-    let _conf = DuxConfigStandard::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
-    
+    let _conf =
+        DuxConfigStandard::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
+
     // Build a HostList
     let hostlist = match &cliargs.hostlist {
         Some(hostlist_path) => {
@@ -61,24 +61,21 @@ fn main() {
 
     // This unwrap is safe since we checked before that the list is not empty.
     for host in hostlist.hosts.as_ref().unwrap() {
-    
         let authmode = match &cliargs.key {
-            Some(privatekeypath) => {
-                Ssh2AuthMode::KeyFile((
-                    cliargs.user.clone().unwrap(),
-                    PathBuf::from(privatekeypath)
-                ))
-            }
+            Some(privatekeypath) => Ssh2AuthMode::KeyFile((
+                cliargs.user.clone().unwrap(),
+                PathBuf::from(privatekeypath),
+            )),
             None => {
                 // No SSH key given as argument, trying with password if it is given
                 match cliargs.password.clone() {
-                    Some(pwd) => {
-                        Ssh2AuthMode::UsernamePassword(
-                            Credentials::from(cliargs.user.clone().unwrap(), pwd)
-                        )
-                    }
+                    Some(pwd) => Ssh2AuthMode::UsernamePassword(Credentials::from(
+                        cliargs.user.clone().unwrap(),
+                        pwd,
+                    )),
                     None => {
-                        panic!("No SSH key or password to connect to remote host."); // TODO : gracefully quit instead of panic
+                        panic!("No SSH key or password to connect to remote host.");
+                        // TODO : gracefully quit instead of panic
                     }
                 }
             }
@@ -118,21 +115,28 @@ fn main() {
             correlationid.get_new_value().unwrap(), // This unwrap() is safe because initialization is checked before.
             RunningMode::Apply,
             host.address.clone(),
-            HostHandlingInfo::from(ConnectionMode::Ssh2, host.address.clone(), ConnectionDetails::Ssh2(Ssh2ConnectionDetails::from(host.address.clone(), authmode))),
+            HostHandlingInfo::from(
+                ConnectionMode::Ssh2,
+                host.address.clone(),
+                ConnectionDetails::Ssh2(Ssh2ConnectionDetails::from(
+                    host.address.clone(),
+                    authmode,
+                )),
+            ),
             HashMap::new(),
             tasklist.clone(),
             ChangeList::new(),
             ResultList::new(),
-            AssignmentFinalStatus::Unset
+            AssignmentFinalStatus::Unset,
         ));
     }
 
     // If the number of threads to use is not specified, one thread per CPU of the local machine
     let threads_number = match cliargs.threads {
-        None => { std::thread::available_parallelism().unwrap().get() }
-        Some(number) => { number }
+        None => std::thread::available_parallelism().unwrap().get(),
+        Some(number) => number,
     };
- 
+
     let resultslist: Mutex<Vec<Assignment>> = Mutex::new(Vec::new());
 
     let pool = rayon::ThreadPoolBuilder::new()
@@ -145,21 +149,20 @@ fn main() {
             for mut assignment in assignmentlist.into_iter() {
                 let resultslist = &resultslist;
                 s.spawn(move |_| {
-
                     let mut hosthandler = HostHandler::from(&assignment.hosthandlinginfo).unwrap();
 
                     let _ = hosthandler.init();
 
                     let _ = assignment.dry_run(&mut hosthandler);
                     if let AssignmentFinalStatus::Unset = assignment.finalstatus {
-                            assignment.apply(&mut hosthandler);
+                        let _ = assignment.apply(&mut hosthandler);
                     }
                     resultslist.lock().unwrap().push(assignment);
                 });
             }
         });
     });
-    
+
     // TODO : implement a better way to sort the output according to the order of the hosts in the HostList
     // aka sort resultslist in HostList order so we simply have to go through resultslist after that
     for host in hostlist.hosts.unwrap() {
@@ -176,7 +179,7 @@ pub fn welcome_message_standard() {
         r"
     ██████╗ ██╗   ██╗██╗  ██╗
     ██╔══██╗██║   ██║╚═███╔═╝
-    ██║  ██║██║   ██║  ███║ 
+    ██║  ██║██║   ██║  ███║
     ██████╔╝╚██████╔╝██╔╝ ██╗
     ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
     🆂🆃🅰🅽🅳🅰🆁🅳

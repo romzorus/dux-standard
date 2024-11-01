@@ -1,5 +1,5 @@
-use duxcore::error::Error;
 use config::{self, Config, File, FileFormat};
+use duxcore::error::Error;
 use serde::Deserialize;
 
 #[derive(Deserialize)]

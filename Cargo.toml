@@ -11,3 +11,7 @@ rayon = "1.10.0"
 config = "0.14.0"
 clap = { version = "4.5.16", features = ["derive"] }
 serde = {version = "1.0.204", features= ["derive"]}
+
+[profile.release]
+lto = true
+
