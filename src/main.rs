@@ -20,12 +20,28 @@ fn main() {
     let _conf = DuxConfigStandard::from(cliargs.conf).expect("Unable to determine configuration. Abort.");
     
     // Build a HostList
-    let hostlist = hostlist_parser(
-        hostlist_get_from_file(&cliargs.hostlist.as_ref().unwrap())
-    );
+    let hostlist = match &cliargs.hostlist {
+        Some(hostlist_path) => {
+            match HostList::from_file(&hostlist_path) {
+                Ok(hostlist) => {
+                    hostlist
+                }
+                Err(error) => {
+                    println!("Unable to read hoslist file. Abort.");
+                    println!("{:?}", error);
+                    exit(1);
+                }
+            }
+        }
+        None => {
+            println!("No hostlist path provided. Abort.");
+            exit(1);
+        }
+    };
+    
 
     if hostlist_get_all_hosts(&hostlist).is_none() {
-        println!("No hosts in given list ({})", &cliargs.hostlist.unwrap());
+        println!("No hosts in given list ({})", cliargs.hostlist.unwrap());
         exit(0);
     }
 
@@ -44,7 +60,6 @@ fn main() {
     let mut assignmentlist: Vec<Assignment> = Vec::new();
 
     // This unwrap is safe since we checked before that the list is not empty.
-    //for host in hostlist_get_all_hosts(&hostlist).unwrap() {
     for host in hostlist.hosts.as_ref().unwrap() {
     
         let authmode = match &cliargs.key {
@@ -69,10 +84,29 @@ fn main() {
             }
         };
 
-        let tasklist = tasklist_parser(
-            tasklist_get_from_file(&cliargs.tasklist.as_ref().unwrap()),
-            &host
-            );
+        // let tasklist = tasklist_parser(
+        //     tasklist_get_from_file(&cliargs.tasklist.as_ref().unwrap()),
+        //     &host
+        //     );
+        
+        let tasklist = match &cliargs.tasklist {
+            Some(tasklist_path) => {
+                match TaskList::from_file(tasklist_path, TaskListFileType::Unknown, &host) {
+                    Ok(tasklist) => {
+                        tasklist
+                    }
+                    Err(error) => {
+                        println!("Unable to build tasklist. Abort.");
+                        println!("{:?}", error);
+                        exit(1);
+                    }
+                }
+            }
+            None => {
+                println!("No hostlist path provided. Abort.");
+                exit(1);
+            }
+        };
     
         if tasklist.tasks.is_empty() {
             println!("No task in given list ({})", &cliargs.tasklist.unwrap());
