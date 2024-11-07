@@ -3,10 +3,7 @@
 <img src="img/dux.png" width="25%">
 </div>
 
-# The goal
-Instead of having one big automation tool (meaning configuration management or orchestration tool) trying to handle all scenarios (be scalable, performant, handle local and remote hosts through this protocol or this one, be compliant with this security standard and this one...), we prefer to build one flexible automation *engine* (the [duxcore](https://crates.io/crates/duxcore) crate) and make it as easy as possible to embed in a codebase already adapted to one's specific need.
-
-This repository contains one implementation example : the standard version. It is the simplest use case : one binary on a host which applies configurations (task lists) to remote hosts.
+This repository contains one example of implementation of the [duxcore](https://crates.io/crates/duxcore) crate : the standard version. It is the simplest use case : one binary on a host which applies configurations (task lists) to remote hosts.
 
 <div align="center">
 <img src="img/standard-illustration.png" width="60%">
@@ -14,87 +11,137 @@ This repository contains one implementation example : the standard version. It i
 
 
 # Usage
-~~~
+~~~shell
 dux -t <tasklist.yaml> -l <hostlist.yaml> -k <SSH private key> -u <username>
 ~~~
 
 *with `tasklist.yaml`*
-~~~
----
-- name: Prerequisites
+~~~yaml
+- name: Let's install a web server !
   steps:
-    - name: 1. Test SSH connectivity
+    - name: First, we test the connectivity and authentication with the host.
       ping:
-
-    - name: 2. Upgrade the whole system
+      
+    - name: Then we can install the package...
       with_sudo: true
       apt:
-        upgrade: true
-
-    - name: 3. Install git
-      with_sudo: true
-      apt:
+        package: '{{ package_name }}'
         state: present
-        package: "{{ packagename }}"
-    
-    - name: 4. Clean before clone
-      command:
-        content: rm -rf dux
-
-    - name: 5. Clone a repository
-      command:
-       content: git clone https://github.com/romzorus/dux.git
+        
+    - name: ... and start & enable the service.
+      with_sudo: true
+      service:
+        name: '{{ service_name }}'
+        state: started
+        enabled: true
 ~~~
 *and `hostlist.yaml`*
-~~~
+~~~yaml
 vars:
-  packagename: git
+  package_name: apache2
+  service_name: apache2
 
 hosts:
-  - 192.168.1.6
-  - 192.168.1.85
+  - 10.20.0.203
+  - 10.20.0.204
 ~~~
 **Output example**
 
-~~~
+~~~json
+{
+  "jobs": [
+    {
+      "host": "10.20.0.203",
+      "timestamp_start": "2024-11-07T22:53:52.781400539+00:00",
+      "timestamp_end": "2024-11-07T22:54:06.610757092+00:00",
+      "final_status": "ApplySuccesful",
+      "tasks": [
+        {
+          "name": "Let's install a web server !",
+          "steps": [
+            {
+              "name": "First, we test the connectivity and authentication with the host.",
+              "expected_state": {
+                "ping": {}
+              },
+              "status": "ApplySuccessful"
+            },
+            {
+              "name": "Then we can install the package...",
+              "expected_state": {
+                "apt": {
+                  "state": "present",
+                  "package": "apache2"
+                }
+              },
+              "status": "ApplySuccessful"
+            },
+            {
+              "name": "... and start & enable the service.",
+              "expected_state": {
+                "service": {
+                  "name": "apache2",
+                  "state": "started",
+                  "enabled": true
+                }
+              },
+              "status": "ApplySuccessful"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "host": "10.20.0.204",
+      "timestamp_start": "2024-11-07T22:53:52.742561538+00:00",
+      "timestamp_end": "2024-11-07T22:54:04.799505739+00:00",
+      "final_status": "ApplySuccesful",
+      "tasks": [
+        {
+          "name": "Let's install a web server !",
+          "steps": [
+            {
+              "name": "First, we test the connectivity and authentication with the host.",
+              "expected_state": {
+                "ping": {}
+              },
+              "status": "ApplySuccessful"
+            },
+            {
+              "name": "Then we can install the package...",
+              "expected_state": {
+                "apt": {
+                  "state": "present",
+                  "package": "apache2"
+                }
+              },
+              "status": "ApplySuccessful"
+            },
+            {
+              "name": "... and start & enable the service.",
+              "expected_state": {
+                "service": {
+                  "name": "apache2",
+                  "state": "started",
+                  "enabled": true
+                }
+              },
+              "status": "ApplySuccessful"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
-    ██████╗ ██╗   ██╗██╗  ██╗
-    ██╔══██╗██║   ██║╚██╗██╔╝
-    ██║  ██║██║   ██║ ╚███╔╝ 
-    ██║  ██║██║   ██║ ██╔██╗ 
-    ██████╔╝╚██████╔╝██╔╝ ██╗
-    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
-
-Host 192.168.1.6 : Changed
-Task : Prerequisites
-┌───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
-│           Step            │                          Changes                          │Results                             │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│1. Test SSH connectivity   │Check SSH connectivity with remote host                    │Success : Host reachable through SSH│
-│2. Upgrade the whole system│Upgrade                                                    │Success : APT upgrade successful    │
-│3. Install git             │Install - git                                              │Success : git install successful    │
-│4. Clean before clone      │Run command : rm -rf dux                                   │Success : Command successfull       │
-│5. Clone a repository      │Run command : git clone https://github.com/romzorus/dux.git│Success : Command successfull       │
-└───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
-
-Host 192.168.1.85 : Changed
-Task : Prerequisites
-┌───────────────────────────┬───────────────────────────────────────────────────────────┬────────────────────────────────────┐
-│           Step            │                          Changes                          │Results                             │
-├───────────────────────────┼───────────────────────────────────────────────────────────┼────────────────────────────────────┤
-│1. Test SSH connectivity   │Check SSH connectivity with remote host                    │Success : Host reachable through SSH│
-│2. Upgrade the whole system│Upgrade                                                    │Success : APT upgrade successful    │
-│3. Install git             │Package(s) already in expected state                       │None                                │
-│4. Clean before clone      │Run command : rm -rf dux                                   │Success : Command successfull       │
-│5. Clone a repository      │Run command : git clone https://github.com/romzorus/dux.git│Success : Command successfull       │
-└───────────────────────────┴───────────────────────────────────────────────────────────┴────────────────────────────────────┘
 ~~~
 
 # Have a remote host handled by Dux
 
 ## On controlled host
 As for other automation tools, Dux needs an account to use on the controlled host. Let's create a `dux` user on the controlled host and give it some privileges :
-```
+```shell
 # Create user (set password interactively)
 sudo adduser dux
 
@@ -107,7 +154,7 @@ echo "dux ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/dux
 
 ## On controller host
 The ideal is to have a SSH passwordless connection :
-```
+```shell
 # Generate a SSH key (no passphrase for the example)
 ssh-keygen -t ed25519 -f controller_key -N "" -q
 
@@ -135,5 +182,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-# Todo list
-- [ ] add unit tests and integration tests
