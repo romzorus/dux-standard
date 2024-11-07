@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-use std::{path::PathBuf, process::exit, sync::Mutex};
+use std::process::exit;
 
 use duxcore::prelude::*;
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 mod cliargs;
 mod conf;
@@ -70,44 +68,9 @@ fn main() {
         .set_tasklist_from_file(&cliargs.tasklist.unwrap(), TaskListFileType::Unknown)
         .unwrap();
 
-
-    job_list.job_list.as_mut().unwrap().par_iter_mut().for_each(|job| job.apply().unwrap());
-
-    // job_list.apply();
+    job_list.apply();
 
     println!("{}", job_list.display_pretty());
-    // // If the number of threads to use is not specified, one thread per CPU of the local machine
-    // let threads_number = match cliargs.threads {
-    //     None => std::thread::available_parallelism().unwrap().get(),
-    //     Some(number) => number,
-    // };
-
-    // let resultslist: Mutex<Vec<Assignment>> = Mutex::new(Vec::new());
-
-    // let pool = rayon::ThreadPoolBuilder::new()
-    //     .num_threads(threads_number)
-    //     .build()
-    //     .unwrap();
-
-    // pool.install(|| {
-    //     rayon::scope(|s| {
-    //         for mut assignment in assignmentlist.into_iter() {
-    //             let resultslist = &resultslist;
-    //             s.spawn(move |_| {
-    //                 let mut hosthandler = HostHandler::from(&assignment.hosthandlinginfo).unwrap();
-
-    //                 let _ = hosthandler.init();
-
-    //                 let _ = assignment.dry_run(&mut hosthandler);
-    //                 if let AssignmentFinalStatus::Unset = assignment.finalstatus {
-    //                     let _ = assignment.apply(&mut hosthandler);
-    //                 }
-    //                 resultslist.lock().unwrap().push(assignment);
-    //             });
-    //         }
-    //     });
-    // });
-
 }
 
 pub fn welcome_message_standard() {

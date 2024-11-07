@@ -33,8 +33,4 @@ pub struct CliArgsStandard {
     /// Path to private SSH2 key to use
     #[arg(short = 'k', long)]
     pub key: Option<String>,
-
-    /// Number of threads to use (default = number of CPU of the local machine)
-    #[arg(long)]
-    pub threads: Option<usize>,
 }
