@@ -9,7 +9,6 @@ use crate::cliargs::{parse_cli_args_standard, CliArgsStandard};
 use crate::conf::DuxConfigStandard;
 
 fn main() {
-    welcome_message_standard();
 
     // Parse the CLI arguments
     let cliargs: CliArgsStandard = parse_cli_args_standard().unwrap();
@@ -73,15 +72,3 @@ fn main() {
     println!("{}", job_list.display_pretty());
 }
 
-pub fn welcome_message_standard() {
-    println!(
-        r"
-    ██████╗ ██╗   ██╗██╗  ██╗
-    ██╔══██╗██║   ██║╚═███╔═╝
-    ██║  ██║██║   ██║  ███║
-    ██████╔╝╚██████╔╝██╔╝ ██╗
-    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝
-    🆂🆃🅰🅽🅳🅰🆁🅳
-"
-    );
-}
