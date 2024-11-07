@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::{path::PathBuf, process::exit, sync::Mutex};
 
 use duxcore::prelude::*;
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 mod cliargs;
 mod conf;
@@ -70,7 +71,9 @@ fn main() {
         .unwrap();
 
 
-    job_list.apply();
+    job_list.job_list.as_mut().unwrap().par_iter_mut().for_each(|job| job.apply().unwrap());
+
+    // job_list.apply();
 
     println!("{}", job_list.display_pretty());
     // // If the number of threads to use is not specified, one thread per CPU of the local machine
