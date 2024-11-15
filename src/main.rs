@@ -39,7 +39,7 @@ fn main() {
         exit(0);
     }
 
-    // How do we connect to all hosts ?
+    // How do we connect to all hosts
     let host_connection_info = match &cliargs.key {
         Some(privatekeypath) => {
             HostConnectionInfo::ssh2_with_key_file(&cliargs.user.unwrap(), privatekeypath)
@@ -67,8 +67,14 @@ fn main() {
         .set_tasklist_from_file(&cliargs.tasklist.unwrap(), TaskListFileType::Unknown)
         .unwrap();
 
-    job_list.apply();
-
-    println!("{}", job_list.display_pretty());
+    match job_list.apply() {
+        Ok(()) => {
+            println!("{}", job_list.display_pretty());
+        }
+        Err(error) => {
+            println!("Unable to apply the tasklist : {:?}", error);
+        }
+    }
+    
 }
 
